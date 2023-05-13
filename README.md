@@ -36,5 +36,7 @@ Shows you the basic device settings. It is not a comprehensive list. I have not 
 This is the tab with which you can make changes to color theme, enable/disable some functionality, change font sizes etc.
 
 #### Equalizer 
-This is where all the controls happen. Hope it will be all straightforward to EQ APO users. If not please do ask. For AutoEQ, headphone list loads AutoEQ settings for Oratory1990 and IEM list loads Crinicle's. Currently there is no option to change this, but am planning to add that in the future. Once loaded, you can save the EQ settings directly, or make changes and save afterwards. It is your ears and your taste after all.
+This is where all the controls happen. Hope it will be all straightforward. 
+
+For AutoEQ, headphone list loads AutoEQ settings for **Oratory1990** and IEM list loads **Crinicle**'s. Currently there is no option to change this, but I am planning to add that in the future. Once loaded, you can save the EQ settings directly, or make changes and save afterwards. It is your ears and your taste after all.
 
