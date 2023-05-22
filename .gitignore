@@ -2,3 +2,5 @@ node_modules
 *.zip
 .github
 *.md
+config/*.json
+currentConfig.json
