@@ -46,6 +46,11 @@ app.get('/plot',(req,res)=>{
     res.render('plot');     
 }) 
 
+app.get('/pipeline',(req,res)=>{
+    res.render('pipeline');     
+}) 
+
+
 app.get('/settings',(req,res)=>{
     res.render('settings');     
 }) 
