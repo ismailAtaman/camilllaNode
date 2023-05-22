@@ -8,6 +8,8 @@ let maxPeak=-1000;
 let peakThreshold;
 let peakArray = [];
 let contextSlider;
+let clipCount=-1;
+let clipTimeoutId;
 
 async function EQPageOnload() {        
     
@@ -60,7 +62,7 @@ async function EQPageOnload() {
     let boxWidth=parseInt(levelmeterHeight/5); 
 
     let barCount = (levelMaxWidth/(marginLeft+boxWidth))-1;
-    console.log(barCount)
+    // console.log(barCount)
     let hueOffset = 170 / barCount
 
     for (i=0;i<barCount;i++) {
@@ -165,17 +167,27 @@ async function EQPageOnload() {
         })}
     ,50);
     
-        //// This section handles clipping detection but needs some work
-        // setInterval(function(){
-        //     sendDSPMessage("GetClippedSamples").then(clipCount=>{
-        //         console.log(clipCount)
-        //         if (clipCount>0) {
-        //             console.log("Clipping detected!")                    
-        //             document.getElementById('clipped').style.backgroundColor='#F00';
-        //             document.getElementById('clippedMessage').innerText="Clipping detected! Please review your pre-amp setting!";
-                    
-        //         }
-        //     })},1000)     
+        // This section handles clipping detection but needs some work
+        setInterval(function(){
+            sendDSPMessage("GetClippedSamples").then(ret=>{
+                if (clipCount==-1) { clipCount=ret; return }
+                if (ret>clipCount) {
+                    clearTimeout(clipTimeoutId);
+                    clipCount=ret;
+                    console.log("Clipping detected!")                    
+                    let clipped = document.getElementById('clipped');
+                    clipped.style.backgroundColor='#F00';
+                    clipped.style.color='white';
+
+                    clipTimeoutId=setTimeout(()=>{
+                        let clipped = document.getElementById('clipped');
+                        clipped.style.backgroundColor='transparent';
+                        clipped.style.color='transparent';
+
+                    },5000)
+                }
+                console.log("ClipCount:",ret)                
+            })},500)     
     
         // document.getElementById('clipped').style.display='none';
         // document.getElementById('clippedMessage').style.display='none';
