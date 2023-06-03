@@ -364,6 +364,7 @@ canvas {
 
 #serverSettings {
     margin-top: 2rem;
+    margin-inline: 10px;
     display: grid;
     grid-template-columns: 100px 150px;
     gap: 1rem;

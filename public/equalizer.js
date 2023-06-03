@@ -64,6 +64,7 @@ async function EQPageOnload() {
     let barCount = (levelMaxWidth/(marginLeft+boxWidth))-1;
     // console.log(barCount)
     let hueOffset = 170 / barCount
+    let hueBase = mainHue;
 
     for (i=0;i<barCount;i++) {
         let d = document.createElement('div');
@@ -72,7 +73,7 @@ async function EQPageOnload() {
         d.style.width= boxWidth+'px';
         d.style.marginLeft=marginLeft;
         d.style.filter='opacity(0.1)';
-        let hue = 170 - (hueOffset * i );
+        let hue = hueBase - (hueOffset * i );
         d.style.backgroundColor='hsl('+hue+',50% , 50%)';
         lBorder.appendChild(d);
 
@@ -82,7 +83,7 @@ async function EQPageOnload() {
         d.style.width=boxWidth+'px';
         d.style.marginLeft=marginLeft;
         d.style.filter='opacity(0.1)';
-        hue = 170 - (hueOffset * i);
+        hue = hueBase - (hueOffset * i);
         d.style.backgroundColor='hsl('+hue+',50% , 50%)';
         rBorder.appendChild(d);
     }
@@ -306,6 +307,7 @@ async function downloadClick() {
         let filters = DSPConfig.filters;
         applyFilters(filters);        
         console.log("Config download successful.");        
+        console.log(filters)
         displayMessage("Download successful");
 
         fetch('/getConfigName').then((res)=>res.text().then(data=>{

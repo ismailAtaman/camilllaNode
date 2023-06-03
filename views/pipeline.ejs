@@ -13,7 +13,43 @@
 
 <%- include('header.ejs'); %>
 
-<div id="pipelineContainer">
-    
-</div>
+<!-- <div id="pipelineContainer"></div> -->
 
+<style>    
+    .pNode {
+        width: 400px;
+        height: 75px;
+        background: linear-gradient(0deg, #222, #444);
+        box-shadow: 10px 10px 15px #111;
+        border-radius: 10px;
+        border: 1px solid #222;
+        margin: 5px;
+        padding: 5px;
+        /* 
+        animation-name: roll-over;
+        animation-duration: 250ms;
+        animation-direction: normal;
+        transform-origin: 50% 50%; 
+        */
+        
+
+    }
+
+    @keyframes roll-over {
+       0%       { transform: rotateX(0deg);} 
+       100%     { transform: rotateX(90deg);} 
+    }
+
+</style>
+
+
+<div class="pNode">
+    <div>Node Type</div>
+    <div>Param 1</div>
+    <div>Param 2</div>
+</div>
+<div class="pNode">
+    <div>Node Type</div>
+    <div>Param 1</div>
+    <div>Param 2</div>
+</div>

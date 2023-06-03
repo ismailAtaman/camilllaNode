@@ -211,7 +211,7 @@ function getServerList() {
 }
 
 function defaultServerConfig() {
-    return [{"Raspberry Pi 4":{"serverIp":"192.168.50.74","port":"1234","default":false}}]
+    return [{"Raspberry Pi 4":{"serverIp":"192.168.50.200","port":"1234","default":false}}]
 }
 
 function addServerConfig(serverConfig) {
