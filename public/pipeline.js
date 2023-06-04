@@ -3,6 +3,7 @@ const nodeSubType = {
     device: 1,
     filter: 2,
     mixer:  4,
+    equalizer: 8,
     other:  0,
 }
 
@@ -11,22 +12,47 @@ const deviceType = {
     output:2,
 }
 
-const Device =    {"type":nodeSubType.device, "params":{}}
-const Invert =    {"type": nodeSubType.filter, "params":{"On":"bool"}};
-const Gain =      {"type": nodeSubType.filter, "params":{"Gain":"num"}};
-const Volume =    {"type": nodeSubType.filter, "params":{}}; 
-const Delay =     {"type": nodeSubType.filter, "params":{"Unit":["ms","mm","samples"],"delay":"num","subsample":"bool"}} 
-const Highpass =  {"type": nodeSubType.filter, "params":{"Frequency":"int","Q":"num"}}; 
-const Lowpass =   {"type": nodeSubType.filter, "params":{"Frequency":"int","Q":"num"}}; 
-const Highself =  {"type": nodeSubType.filter, "params":{"Frequency":"int","Gain":"num","Q":"num"}}; 
-const Lowshelf =  {"type": nodeSubType.filter, "params":{"Frequency":"int","Gain":"num","Q":"num"}}; 
-const Peaking =   {"type": nodeSubType.filter, "params":{"Frequency":"int","Gain":"num","Q":"num"}}; 
-const Bandpass =  {"type": nodeSubType.filter, "params":{"Frequency":"int","Badnwidth":"num"}}; 
-const Allpass =   {"type": nodeSubType.filter, "params":{"Frequency":"int","Badnwidth":"num"}}; 
-const Linkwitz =  {"type": nodeSubType.filter, "params":{"Actual Frequency":"int","Actual Q":"num","Target Frequency":"int","Target Q":"num"}}; 
-const Dither =    {"type": nodeSubType.other, "params":{"Type":["Simple","Uniform","Lipshitz441","Fweighted441","Shibata441","Shibata48","ShibataLow441","ShibataLow48","None"]}}; 
-const Mixer =     {"type": nodeSubType.mixer, "params":{}};
-const Equalizer = {"type": nodeSubType.mixer, "params":{"filters":[]}};
+/// params object structure {name, dataType, default, max, min, }
+
+const pGain = {"name":"Gain","dataType":"num","unit":"dB","default":0,"min":-32,"max":32};
+const pFrequency = {"name":"Frequency", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pQ = {"name":"Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+const pBandwidth = {"name":"Bandwitdh", "dataType":"num","unit":undefined,"default":0.7,"min":0.1,"max":40}
+
+const pLevel = {"name":"Level", "dataType":"num","unit":"dBFS","default":-20,"min":-100,"max":0}
+const pUnit = {"name":"Unit", "dataType":"list","unit":["ms","mm","samples"],"default":"ms","min":undefined,"max":undefined}
+const pDelay = {"name":"Delay", "dataType":"num","unit":undefined,"default":0,"min":-5000,"max":5000}
+
+const pOnOff = {"name":"On/Off", "dataType":"bool","unit":undefined,"default":"checked","min":undefined,"max":undefined}
+const pSubsample = {"name":"Subsample", "dataType":"bool","unit":undefined,"default":"checked","min":undefined,"max":undefined}
+
+const pDither = {"name":"Type", "dataType":"list","unit":["Simple","Uniform","Lipshitz441","Fweighted441","Shibata441","Shibata48","ShibataLow441","ShibataLow48","None"],"default":"None","min":undefined,"max":undefined}
+
+const pActualFrequency = {"name":"Actual Freq.", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pActualQ = {"name":"Actual Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+const pTargetFrequency = {"name":"Target Freq.", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pTargetQ = {"name":"Target Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+
+const pIn = {"name":"In","dataType":"num","unit":" channels","default":2,"min":2,"max":16};
+const pOut = {"name":"Out","dataType":"num","unit":" channels","default":2,"min":2,"max":16};
+
+
+const Device =    {"name":"Device","type":nodeSubType.device, "params":[]}
+const Invert =    {"name":"Invert","type": nodeSubType.filter, "params":[pOnOff]};
+const Gain =      {"name":"Gain","type": nodeSubType.filter, "params":[pGain]};
+const Volume =    {"name":"Volume","type": nodeSubType.filter, "params":[pLevel]}; 
+const Delay =     {"name":"Delay","type": nodeSubType.filter, "params":[pUnit,pDelay,pSubsample]} 
+const Highpass =  {"name":"Highpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
+const Lowpass =   {"name":"Lowpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
+const Highself =  {"name":"Highshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Lowshelf =  {"name":"Lowshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Peaking =   {"name":"Peaking","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Bandpass =  {"name":"Bandpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
+const Allpass =   {"name":"Allpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
+const Linkwitz =  {"name":"Linkwitz","type": nodeSubType.filter, "params":[pActualFrequency,pActualQ,pTargetFrequency,pTargetQ]}; 
+const Dither =    {"name":"Dither","type": nodeSubType.other, "params":[pDither]}; 
+const Mixer =     {"name":"Mixer","type": nodeSubType.mixer, "params":[pIn,pOut]};
+const Equalizer = {"name":"Equalizer","type": nodeSubType.equalizer, "params":[{"name":"Equalizer","dataType":"function","function":showEQ}]};
 
 const nodeType = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshelf,Peaking,Bandpass,Allpass,Linkwitz,Dither,Mixer,Equalizer]
 
@@ -49,56 +75,77 @@ const nodeType = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshelf,Pe
 //           - channel: 1
 //             gain: -6
 
-class pipelineNode {    
-    nodeType;
-    type;
-    subType;
-    params=[]
-    channels=[];
+class pipelineNode { 
+    minimized=false;       
+    constructor(parent,nodeObject) {
+        let node= document.createElement('div');
+        node.className='pNode';                
 
-    constructor(parent,nodeType) {
-        let elem= document.createElement('div');
-        elem.className='node';
-        this.nodeType=nodeType;        
-        if (nodeType==nodeTypes.start) {
-             elem.classList.add('start-node');
+        // Add selection 
+        let typeSelect = document.createElement('select');        
+        typeSelect.className='nodeTitle';
+        let typeOption;
 
-             let top=parent.getBoundingClientRect().top+ 5;
-             let left=parent.getBoundingClientRect().width/2 - 75;
-
-             elem.style.top= top +'px';
-             elem.style.left=left +'px';
-
-        } else if (nodeType==nodeTypes.end) {
-            elem.classList.add('end-node');
-            
-            let top = parent.getBoundingClientRect().bottom - 100;
-            let left = parent.getBoundingClientRect().width/2 -75;
-
-            elem.style.top= top+'px';
-            elem.style.left=left +'px';
-        } else {
-
+        for (i=0;i<nodeType.length;i++) {
+            typeOption = document.createElement('option');
+            typeOption.value=nodeType[i].name;
+            typeOption.innerText=typeOption.value;
+            typeSelect.appendChild(typeOption);            
         }
 
+        let paramSection = document.createElement('div');
+        paramSection.className='paramSection'
+        
+        if (nodeObject!=undefined) {
+            let cNodeType = nodeType.find(e=>e.name==nodeObject.name);
+            typeSelect.value=nodeObject.name
+            let params = cNodeType.params;      
+            for (i=0;i<params.length;i++) {
+                //console.log(params[i]);
+                let paramLine = new textBox(params[i]);
+                paramLine.className='paramLine';                
+                paramSection.appendChild(paramLine);                
+            }
+        }
 
-        //// Event Listners
-        elem.addEventListener('mousedown',function(event){
-            selectedNode=this;             
-            selectedNode.offsetX=event.offsetX;
-            selectedNode.offsetY=event.offsetY;
+        //// Select Event Listeners
+        typeSelect.addEventListener('input',function(){           
+            paramSection.replaceChildren();
+
+            let selectedType = nodeType.find(e=>e.name==this.value)
+            let subType = selectedType.nodeSubType;
+            let params = selectedType.params;      
+
+            for (i=0;i<params.length;i++) {
+                //console.log(params[i]);
+                let paramLine = new textBox(params[i]);
+                paramLine.className='paramLine';                
+                paramSection.appendChild(paramLine);                
+            }
+   
         })
 
-        elem.addEventListener('mouseup',function(){        
-            selectedNode=undefined;
+        node.appendChild(typeSelect);
+        node.appendChild(paramSection);
+
+        //// Element Event Listners
+        node.addEventListener('mousedown',function(event){        
         })
 
-        elem.addEventListener('mousemove',function(event){        
-            pipelineNode.mousemoveEvent(event);
+        node.addEventListener('mouseup',function(){       
         })
 
+        node.addEventListener('mousemove',function(event){
+        })
 
-        parent.appendChild(elem)
+        node.addEventListener('contextmenu',function(event){
+            event.preventDefault();
+            if (this.minimized) pipelineNode.maximize(this); else pipelineNode.minimize(this)
+        })
+
+        parent.appendChild(node);
+        pipelineNode.minimize(node);
+        return node;        
     }
 
 
@@ -110,29 +157,156 @@ class pipelineNode {
         selectedNode.style.left = l+'px';
         selectedNode.style.top = t+'px';
     }
+
+    static minimize(node) {                    
+        node.style.height='27px'        
+        node.minimized=true;
+    }
     
+    static maximize(node) {             
+        node.style.height='max-content';
+        node.minimized=false;
+        
+    }
+
+}
+
+class textBox {
+    //const pGain = {"name":"Gain", "dataType":"num","unit":"dB","default":0,"min":-32,"max":32};
+
+    constructor(paramObject) {
+        if (paramObject==undefined) return undefined;
+
+        // Create container element
+        let elem=document.createElement('div');        
+        
+        /// Add the label element
+        let label = document.createElement('span');
+        label.innerText=paramObject.name;        
+        
+
+        elem.appendChild(label);
+        let subElem;
+
+        if (paramObject.dataType=='list') {
+            subElem = document.createElement('select');
+            //console.log(paramObject.unit)
+
+            for (let opt of paramObject.unit) {
+                let optElem = document.createElement('option');
+                optElem.innerText=opt;
+                optElem.value=opt;
+                subElem.appendChild(optElem);
+            }
+            
+        } else if (paramObject.dataType=='function') {
+            subElem = document.createElement('input');
+            subElem.type='submit';
+            subElem.value=paramObject.name;
+            subElem.addEventListener('click',paramObject.function)
+        } else {
+            subElem = document.createElement('input');
+            if (paramObject.dataType=='bool') subElem.type='checkbox'; else subElem.type='text';
+            subElem.value= paramObject.unit?paramObject.default+paramObject.unit:paramObject.default;
+
+            subElem.addEventListener('focus',function(){
+                if (paramObject.unit==undefined) return;
+                this.value=this.value.replace(paramObject.unit,'');
+            })
+
+            subElem.addEventListener('focusout',function(){
+                if (paramObject.min!=undefined) this.value = this.value<paramObject.min?paramObject.min:this.value
+                if (paramObject.max!=undefined) this.value = this.value>paramObject.max?paramObject.max:this.value
+                if (paramObject.unit!=undefined) this.value=this.value+paramObject.unit;
+            })
+        }        
+
+        if (paramObject.fixed) subElem.readOnly=true;
+        subElem.style.maxWidth='60px';
+        subElem.style.left='0px';
+        elem.appendChild(subElem);
+        return elem;
+    }
 }
 
 let container;
 let selectedNode=undefined;
 
-function pipelineOnLoad() {
+async function pipelineOnLoad() {
     container = document.getElementById('pipelineContainer');
-    return;
 
-    // Event Listerners
-    document.addEventListener('mouseup',function(){
-        selectedNode=undefined;
+    // Event Listeners
+    // document.addEventListener('mouseup',function(){
+    //     selectedNode=undefined;
+    // })
+
+    // container.addEventListener('mousemove',function(event){        
+    //     pipelineNode.mousemoveEvent(event);
+    // })
+
+    // container.addEventListener('dblclick',function(event){        
+    //     new pipelineNode(container);    
+    // })
+
+    // Get current pipeline
+
+    await connectToDsp();
+    downloadConfigFromDSP().then(DSPConfig=>{
+        console.log(DSPConfig)
+        // Number of elements is gonna be number of channels
+        loadPipelineFromConfig(DSPConfig,container);
     })
+    
 
-    container.addEventListener('mousemove',function(event){        
-        pipelineNode.mousemoveEvent(event);
-    })
+}
 
+function loadPipelineFromConfig(DSPConfig,parent) {
+    for (let pipeline of DSPConfig.pipeline) {
+        
+        // Create channel element and set attributes
+        let channelElement = document.createElement('div');        
+        channelElement.className='pipelineChannel';        
+        channelElement.setAttribute('channelName',"Channel "+pipeline.channel)
+        channelElement.addEventListener('dblclick',()=>new pipelineNode(channelElement))
 
-    let startNode = new pipelineNode(container, nodeTypes.start);
-    new pipelineNode(container, nodeTypes.normal);
-    new pipelineNode(container, nodeTypes.normal);
-    let endNode = new pipelineNode(container, nodeTypes.end);
+        let filters = DSPConfig.filters;
+        let mixers  = DSPConfig.mixers;        
+        
+        let channel = pipeline.channel;
+        for (let filter of pipeline.names) {
+            let cFilter = filters[filter]
 
+            if (cFilter.type=='Biquad') {                
+                let cFrequency = pFrequency;
+                let cGain = pGain;
+                let cQ = pQ;
+
+                cFrequency.default=cFilter.parameters.freq;
+                cGain.default=cFilter.parameters.gain;
+                cQ.default=cFilter.parameters.q;
+                let cNodeObject = {"name":cFilter.parameters.type,"type": nodeSubType.filter, "params":[cFrequency,cGain,cQ]}; 
+                new pipelineNode(channelElement,cNodeObject);
+
+            } else if(cFilter.type=='Gain') {                                   
+                let cNodeObject = Gain;
+                let cGain = pGain;
+                cGain.default=cFilter.parameters.gain; 
+                cNodeObject.params=[cGain]                       
+                new pipelineNode(channelElement,cNodeObject);
+                
+            } else if(cFilter.type=='Volume') {                        
+                let cNodeObject = Volume;
+                let cLevel = pLevel;                
+                cNodeObject.params=[cLevel]
+                new pipelineNode(channelElement,cNodeObject);
+            }
+
+        }
+
+        parent.appendChild(channelElement);
+    }
+}
+
+function showEQ() {
+    alert('Imagine EQ window being displayed now');
 }

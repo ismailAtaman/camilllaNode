@@ -690,35 +690,6 @@ hr {
     color:white;
 }
 
-#pipelineContainer {
-    display: grid;
-    width: 1200px;
-    height: 900px;
-    padding: 10px;
-    border: 1px solid white;
-    border-radius: 7px;
-    margin: 10px;
-    background-color: #222;
-}
-
-.node {
-    position: absolute;
-    padding: 5px;
-    border: 1px solid white;
-    width: 150px;
-    height: 80px;
-    border-radius: 7px;
-    background-color: #333;
-    user-select: none;
-}
-
-.start-node {
-    background-color: red;
-}
-
-.end-node {
-    background-color: green;
-}
 
 
 /**************************************************************************************************************/
