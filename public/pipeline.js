@@ -229,11 +229,28 @@ class textBox {
     }
 }
 
-let container;
+class device {
+    constructor(deviceObject,parent) {
+        let deviceElement = document.createElement('div');
+        deviceElement.className='pipelineDevice';
+
+        let deviceType = deviceObject.type;
+        let channelCount = deviceObject.channels;
+        let deviceName = deviceObject.device;
+        let format = deviceObject.format;
+
+
+        parent.appendChild(deviceElement);
+    }
+}
+
+let pipelineContainer, captureContainer, playbackContainer;
 let selectedNode=undefined;
 
 async function pipelineOnLoad() {
-    container = document.getElementById('pipelineContainer');
+    captureContainer = document.getElementById('pipelineContainer');
+    pipelineContainer = document.getElementById('pipelineContainer');    
+    playbackContainer = document.getElementById('pipelineContainer');
 
     // Event Listeners
     // document.addEventListener('mouseup',function(){
@@ -252,9 +269,15 @@ async function pipelineOnLoad() {
 
     await connectToDsp();
     downloadConfigFromDSP().then(DSPConfig=>{
-        console.log(DSPConfig)
-        // Number of elements is gonna be number of channels
-        loadPipelineFromConfig(DSPConfig,container);
+         console.log(DSPConfig)
+
+        //loadCaptureDevices(DSPConfig,captureContainer)
+        console.log(DSPConfig.devices.capture)
+        console.log(DSPConfig.devices.playback)
+        
+
+        
+        loadPipelineFromConfig(DSPConfig,pipelineContainer);
     })
     
 
@@ -262,7 +285,7 @@ async function pipelineOnLoad() {
 
 function loadPipelineFromConfig(DSPConfig,parent) {
     for (let pipeline of DSPConfig.pipeline) {
-        
+
         // Create channel element and set attributes
         let channelElement = document.createElement('div');        
         channelElement.className='pipelineChannel';        

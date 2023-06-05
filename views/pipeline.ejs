@@ -36,29 +36,31 @@
         */
     }
 
-    #pipelineContainer {        
+    .pipelineContainer {        
         display: flex;
         flex-direction: row;        
+        width: 750px;
         gap: 5px;
-        width: 1200px;
-        height: 900px;
-        padding: 0;
+        padding: 10px;
         border: 1px solid white;
         border-radius: 7px;
         margin: 10px;
         background-color: #222;
         overflow: scroll;        
     }
+    #pipelineContainer {            
+        height: 500px;        
+    }
 
     .pipelineChannel {        
         width: 250px;
         height: max-content;        
-        padding-bottom: 20px;
+        padding-bottom: 25px;
         background-color: #444;        
-        border-radius: 7px;
+        border-radius: 7px;        
     }
 
-    .pipelineChannel::before {
+    /* .pipelineChannel::before {
         content: attr(channelName);        
         color: white;
         background-color: hsla(var(--main-hue),60%, 60%, 0.2);
@@ -69,7 +71,7 @@
         display: block;
         line-height: 14px;
         border-radius: 7px 7px 0 0;
-    }
+    } */
 
     .nodeTitle {
         font-size: 16px !important;
@@ -141,17 +143,17 @@
 
 </style>
 
-<div id="pipelineContainer"></div>
+<div id="captureContainer" class="pipelineContainer"></div>
+<div id="pipelineContainer" class="pipelineContainer"></div>
+<div id="playbackContainer" class="pipelineContainer"></div>
 
-<!-- 
-    <div class="pNode">
-        <div>Node Type</div>
-        <div>Param 1</div>
-        <div>Param 2</div>
-    </div>
-    <div class="pNode">
-        <div>Node Type</div>
-        <div>Param 1</div>
-        <div>Param 2</div>
-    </div> 
--->
+
+<div id="pipelineContextMenu" class="pipelineContextMenu">
+    <ul>
+        <li>Add channel</li>
+        <li>Remove channel</li>
+    </ul>
+
+</div>
+
+<div id="channelContextMenu" class="pipelineContextMenu"></div>
