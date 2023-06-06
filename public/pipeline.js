@@ -7,10 +7,6 @@ const nodeSubType = {
     other:  0,
 }
 
-const deviceType = {
-    input:1,
-    output:2,
-}
 
 /// params object structure {name, dataType, default, max, min, }
 
@@ -230,17 +226,33 @@ class textBox {
 }
 
 class device {
+    deviceType;
+    channelCount;
+    deviceName;
+    format;
+
     constructor(deviceObject,parent) {
-        let deviceElement = document.createElement('div');
-        deviceElement.className='pipelineDevice';
-
-        let deviceType = deviceObject.type;
-        let channelCount = deviceObject.channels;
-        let deviceName = deviceObject.device;
-        let format = deviceObject.format;
+        this.deviceType = deviceObject.type;
+        this.channelCount = deviceObject.channels;
+        this.deviceName = deviceObject.device;
+        this.format = deviceObject.format;
 
 
-        parent.appendChild(deviceElement);
+        for (i=0;i<this.channelCount;i++) {        
+            let channelElement = document.createElement('div');        
+            channelElement.className='pipelineChannel';        
+            channelElement.setAttribute('channelName',"Channel "+i)    
+            
+            let channelName = document.createElement('div');
+            channelName.innerText ='Channel '+i;
+            channelName.style.paddingInline='10px';
+            channelName.style.paddingBottom='-10px';
+            channelElement.appendChild(channelName)
+
+            parent.appendChild(channelElement);
+        }
+
+        
     }
 }
 
@@ -248,9 +260,9 @@ let pipelineContainer, captureContainer, playbackContainer;
 let selectedNode=undefined;
 
 async function pipelineOnLoad() {
-    captureContainer = document.getElementById('pipelineContainer');
+    captureContainer = document.getElementById('captureContainer');
     pipelineContainer = document.getElementById('pipelineContainer');    
-    playbackContainer = document.getElementById('pipelineContainer');
+    playbackContainer = document.getElementById('playbackContainer');
 
     // Event Listeners
     // document.addEventListener('mouseup',function(){
@@ -274,8 +286,9 @@ async function pipelineOnLoad() {
         //loadCaptureDevices(DSPConfig,captureContainer)
         console.log(DSPConfig.devices.capture)
         console.log(DSPConfig.devices.playback)
-        
 
+        new device(DSPConfig.devices.capture,captureContainer)
+        new device(DSPConfig.devices.playback,playbackContainer)
         
         loadPipelineFromConfig(DSPConfig,pipelineContainer);
     })

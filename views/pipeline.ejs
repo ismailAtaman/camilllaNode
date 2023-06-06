@@ -39,14 +39,24 @@
     .pipelineContainer {        
         display: flex;
         flex-direction: row;        
-        width: 750px;
         gap: 5px;
-        padding: 10px;
-        border: 1px solid white;
+
+        width: max-content;
+        min-height: 50px;
+        
+        
+        background-color: #222;       
+
+        border: 1px solid #999;
         border-radius: 7px;
+        
+        padding: 5px;
+        padding-right: 25px;
+        padding-bottom: 25px;
         margin: 10px;
-        background-color: #222;
-        overflow: scroll;        
+        
+        overflow-y: auto;
+        
     }
     #pipelineContainer {            
         height: 500px;        
@@ -56,6 +66,7 @@
         width: 250px;
         height: max-content;        
         padding-bottom: 25px;
+
         background-color: #444;        
         border-radius: 7px;        
     }
@@ -125,7 +136,7 @@
     }
 
     .paramSection {
-        padding: 5px;
+        padding: 10px;
         padding-left: 10px;
     }
 
