@@ -73,6 +73,8 @@ const nodeType = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshelf,Pe
 
 class pipelineNode { 
     minimized=false;       
+    connector=undefined;
+
     constructor(parent,nodeObject) {
         let node= document.createElement('div');
         node.className='pNode';                
@@ -120,6 +122,7 @@ class pipelineNode {
             }
    
         })
+
 
         node.appendChild(typeSelect);
         node.appendChild(paramSection);
@@ -251,7 +254,7 @@ class device {
 
             parent.appendChild(channelElement);
         }
-
+        
         
     }
 }
@@ -264,31 +267,16 @@ async function pipelineOnLoad() {
     pipelineContainer = document.getElementById('pipelineContainer');    
     playbackContainer = document.getElementById('playbackContainer');
 
-    // Event Listeners
-    // document.addEventListener('mouseup',function(){
-    //     selectedNode=undefined;
-    // })
-
-    // container.addEventListener('mousemove',function(event){        
-    //     pipelineNode.mousemoveEvent(event);
-    // })
-
-    // container.addEventListener('dblclick',function(event){        
-    //     new pipelineNode(container);    
-    // })
-
-    // Get current pipeline
-
     await connectToDsp();
     downloadConfigFromDSP().then(DSPConfig=>{
          console.log(DSPConfig)
 
         //loadCaptureDevices(DSPConfig,captureContainer)
-        console.log(DSPConfig.devices.capture)
-        console.log(DSPConfig.devices.playback)
+        //console.log(DSPConfig.devices.capture)
+        //console.log(DSPConfig.devices.playback)
 
-        new device(DSPConfig.devices.capture,captureContainer)
-        new device(DSPConfig.devices.playback,playbackContainer)
+        //new device(DSPConfig.devices.capture,captureContainer)
+        //new device(DSPConfig.devices.playback,playbackContainer)
         
         loadPipelineFromConfig(DSPConfig,pipelineContainer);
     })
