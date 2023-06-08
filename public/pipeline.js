@@ -1,13 +1,7 @@
 
 let container;
 let currentMode;
-
-const modes = {
-    none:0,
-    nodeSelected:1,
-    connectorSelected:2,
-    contextMenu:4
-}
+let lineIndex=0;
 
 const nodeTypes = {
     capture: 0,
@@ -15,10 +9,59 @@ const nodeTypes = {
     filter: 2
 }
 
+const nodeSubType = {
+    device: 1,
+    filter: 2,
+    mixer:  4,
+    equalizer: 8,
+    other:  0,
+}
+
 const connectorTypes = {
     bottom:0,
     top:1,
 }
+
+const pGain = {"name":"Gain","dataType":"num","unit":"dB","default":0,"min":-32,"max":32};
+const pFrequency = {"name":"Frequency", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pQ = {"name":"Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+const pBandwidth = {"name":"Bandwitdh", "dataType":"num","unit":undefined,"default":0.7,"min":0.1,"max":40}
+
+const pLevel = {"name":"Level", "dataType":"num","unit":"dBFS","default":-20,"min":-100,"max":0}
+const pUnit = {"name":"Unit", "dataType":"list","unit":["ms","mm","samples"],"default":"ms","min":undefined,"max":undefined}
+const pDelay = {"name":"Delay", "dataType":"num","unit":undefined,"default":0,"min":-5000,"max":5000}
+
+const pOnOff = {"name":"On/Off", "dataType":"bool","unit":undefined,"default":"checked","min":undefined,"max":undefined}
+const pSubsample = {"name":"Subsample", "dataType":"bool","unit":undefined,"default":"checked","min":undefined,"max":undefined}
+
+const pDither = {"name":"Type", "dataType":"list","unit":["Simple","Uniform","Lipshitz441","Fweighted441","Shibata441","Shibata48","ShibataLow441","ShibataLow48","None"],"default":"None","min":undefined,"max":undefined}
+
+const pActualFrequency = {"name":"Actual Freq.", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pActualQ = {"name":"Actual Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+const pTargetFrequency = {"name":"Target Freq.", "dataType":"int","unit":"Hz","default":1000,"min":10,"max":21000};
+const pTargetQ = {"name":"Target Q", "dataType":"num","unit":"","default":1.41,"min":0.1,"max":40}
+
+const pIn = {"name":"In","dataType":"num","unit":" channels","default":2,"min":2,"max":16};
+const pOut = {"name":"Out","dataType":"num","unit":" channels","default":2,"min":2,"max":16};
+
+
+const Invert =    {"name":"Invert","type": nodeSubType.filter, "params":[pOnOff]};
+const Gain =      {"name":"Gain","type": nodeSubType.filter, "params":[pGain]};
+const Volume =    {"name":"Volume","type": nodeSubType.filter, "params":[pLevel]}; 
+const Delay =     {"name":"Delay","type": nodeSubType.filter, "params":[pUnit,pDelay,pSubsample]} 
+const Highpass =  {"name":"Highpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
+const Lowpass =   {"name":"Lowpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
+const Highself =  {"name":"Highshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Lowshelf =  {"name":"Lowshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Peaking =   {"name":"Peaking","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
+const Bandpass =  {"name":"Bandpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
+const Allpass =   {"name":"Allpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
+const Linkwitz =  {"name":"Linkwitz","type": nodeSubType.filter, "params":[pActualFrequency,pActualQ,pTargetFrequency,pTargetQ]}; 
+const Dither =    {"name":"Dither","type": nodeSubType.other, "params":[pDither]}; 
+const Mixer =     {"name":"Mixer","type": nodeSubType.mixer, "params":[pIn,pOut]};
+const Equalizer = {"name":"Equalizer","type": nodeSubType.equalizer, "params":[{"name":"Equalizer","dataType":"function","function":showEQ}]};
+
+const nodeTypeList = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshelf,Peaking,Bandpass,Allpass,Linkwitz,Dither,Mixer,Equalizer]
 
 function pipelinePageOnLoad() {
     container = document.getElementById('pipelineContainer');
@@ -52,7 +95,8 @@ function pipelinePageOnLoad() {
             removeTempLines();
             
             let line = drawLine(origin,dest);
-            let id =document.getElementsByClassName('connectorLine').length +1;
+            let id =lineIndex;
+            lineIndex++;
             line.id = 'line'+id;
             this.selectedConnector.lines.push(line.id);
             this.targetConnector.lines.push(line.id);
@@ -77,7 +121,7 @@ function pipelinePageOnLoad() {
             let nodeRect = this.selectedNode.getBoundingClientRect();
             let containerRect = this.getBoundingClientRect();
 
-            console.log(this.selectedNode.offsetX,this.selectedNode.offsetY)
+            //console.log(this.selectedNode.offsetX,this.selectedNode.offsetY)
 
             // Move the box
             // Consider the offset of the mouse click to object center
@@ -106,6 +150,8 @@ function pipelinePageOnLoad() {
             function updateLine(lines) {
                 for (let lineId of lines) {
                     let line = document.getElementById(lineId);
+
+                    if (line==undefined) continue;
                     
                     originRect = line.selectedConnector.getBoundingClientRect();
                     targetRect =line.targetConnector.getBoundingClientRect();
@@ -170,7 +216,23 @@ function pipelinePageOnLoad() {
         contextMenu.style.left=e.clientX+'px';
         contextMenu.style.top=e.clientY+'px';
         contextMenu.style.display='block';
+        contextMenu.targetNode = undefined;
     })
+
+    /// Add event listeners to context menu items
+    let contextMenuItems = document.getElementsByTagName('li');
+    
+    for (let contextMenuItem of contextMenuItems) {
+        console.log(contextMenuItem.command)
+        let command = contextMenuItem.getAttribute('command');
+        if (command!=undefined) {
+            contextMenuItem.addEventListener('mousedown',function(e){                
+                executeContextMenuCommand(command,e);                
+                hideClass('contextMenu');
+            })
+        }
+    }    
+
 
 }
 
@@ -217,7 +279,6 @@ function createLine(line,lineParams) {
     line.setAttribute('style',style);
     line.innerText=' ';
     line.className='connectorLine';
-
     return line;
 }
 
@@ -255,6 +316,53 @@ function hideClass(className) {
     }
 }
 
+/// Context menu functions 
+
+function executeContextMenuCommand(command,e) {
+    if (command=='addNode') addNode(e);
+    if (command=='alignNodes') alignNodes();
+    if (command=='autoConnect') autoConnect();
+    if (command=='disconnectNode') disconnectNode(e.target.parentElement.parentElement.targetNode);
+    if (command=='removeNode') removeNode(e.target.parentElement.parentElement.targetNode);
+}
+
+
+function removeNode(node) {
+    disconnectNode(node);
+    node.remove();
+}
+
+function disconnectNode(node) {
+    //console.log(node);
+    let topLines = node.topConnector.lines;
+    let bottomLines = node.bottomConnector.lines;
+    let lines = topLines.concat(bottomLines);
+    for (let line of lines) {                
+        let lineElement = document.getElementById(line);
+        if (lineElement!=undefined) lineElement.remove();       
+    }
+    node.topConnector.lines=[];
+    node.bottomConnector.lines=[];
+}
+
+function clearFilter() {
+
+}
+
+function alignNodes() {
+    let nodes = document.getElementsByClassName('pipelineNode');
+}
+
+function autoConnect() {
+}
+
+
+
+function showEQ() {
+
+}
+
+
 class pipelineNode {
     constructor(nodeType,parentElement) {
         let box = document.createElement('div');
@@ -285,12 +393,12 @@ class pipelineNode {
             contextMenu.style.left=e.clientX+'px';
             contextMenu.style.top=e.clientY+'px';
             contextMenu.style.display='block';
+            contextMenu.targetNode = this;
         })
 
         //// Connectors
         let bottomConnector = new connector(connectorTypes.bottom);
         bottomConnector.style.bottom='-8px'
-
 
         let topConnector = new connector(connectorTypes.top);
         topConnector.style.top='-8px'

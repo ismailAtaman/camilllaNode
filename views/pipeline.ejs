@@ -79,8 +79,11 @@
         .contextMenu li {
             list-style: none;
             cursor: pointer;         
-            padding: 7px;
-            line-height: 1;            
+            padding: 5px;
+            padding-inline: 10px;
+            line-height: 1;   
+            font-size: 14px;         
+            user-select: none;
         }
 
         .contextMenu li:hover {
@@ -107,6 +110,8 @@
         <ul>
             <li command="addNode" >Add node</li>            
             <li command="clearFilters">Clear filters</li>
+            <li command="alignNodes">Align nodes</li>
+            <li command="autoConnect">Auto connect</li>
 
         </ul>
     </div>
