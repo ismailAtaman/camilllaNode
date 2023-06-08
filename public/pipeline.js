@@ -39,10 +39,12 @@ function pipelinePageOnLoad() {
             line.selectedConnector= this.selectedConnector;
             line.targetConnector=this.targetConnector;
 
-            container.appendChild(line)
+            container.appendChild(line);
 
-
-            console.log("Connect ",this.selectedConnector,this.targetConnector)   
+            // Remov temp lines 
+            removeTempLines()            
+            
+            console.log("Connect")   
             this.targetConnector=undefined;            
         }
 
@@ -77,11 +79,13 @@ function pipelinePageOnLoad() {
             function updateLine(lines) {
                 for (let lineId of lines) {
                     let line = document.getElementById(lineId);
+                    
                     originRect = line.selectedConnector.getBoundingClientRect();
                     targetRect =line.targetConnector.getBoundingClientRect();
 
                     let origin =  [originRect.left + originRect.width/2 , originRect.top + originRect.height/2]
                     let target =  [targetRect.left + targetRect.width/2, targetRect.top + targetRect.height/2]
+
                     lineParams = calculateLineParams(origin,target);
                     createLine(line,lineParams);
                     
@@ -91,8 +95,27 @@ function pipelinePageOnLoad() {
         }
 
         if (this.selectedConnector!=undefined) {
-            if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) return;             
-            console.log("Touch ",this.selectedConnector,this.targetConnector)                    
+            if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) { removeTempLines(); return; }            
+
+            removeTempLines();
+
+            originRect = this.selectedConnector.getBoundingClientRect();
+            targetRect =this.targetConnector.getBoundingClientRect();
+
+            let origin =  [originRect.left + originRect.width/2 , originRect.top + originRect.height/2]
+            let target =  [targetRect.left + targetRect.width/2, targetRect.top + targetRect.height/2]
+
+            let line = drawLine(origin,target);                        
+            line.style.borderColor='red';
+            line.style.borderStyle='dashed';
+            line.className='tempLine'
+            container.appendChild(line);            
+            
+            console.log("Touch")                    
+        }
+
+        if (this.targetConnector==undefined) {
+            removeTempLines();
         }
 
 
@@ -150,6 +173,15 @@ function createLine(line,lineParams) {
     return line;
 }
 
+function removeTempLines() {
+    let tempLines = document.getElementsByClassName('tempLine');
+    let tempLineCount = tempLines.length
+    for (i=0;i<tempLineCount;i++) {
+        tempLines[0].remove();
+    }
+
+}
+
 class pipelineNode {
     constructor(nodeType,parentElement) {
         let box = document.createElement('div');
@@ -200,6 +232,7 @@ class connector {
 
         conn.addEventListener('mouseout',function(){
             this.style.backgroundColor='white'
+            this.parentElement.parentElement.targetConnector=undefined;
         })
 
         conn.addEventListener('mousedown',function(){
