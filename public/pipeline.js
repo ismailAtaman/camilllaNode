@@ -1,6 +1,19 @@
 
 let container;
+let currentMode;
 
+const modes = {
+    none:0,
+    nodeSelected:1,
+    connectorSelected:2,
+    contextMenu:4
+}
+
+const nodeTypes = {
+    capture: 0,
+    playback: 1,
+    filter: 2
+}
 
 const connectorTypes = {
     bottom:0,
@@ -15,23 +28,30 @@ function pipelinePageOnLoad() {
         addNode(e);    
     })
 
-    container.addEventListener('mouseup',function(e){        
-        if (this.selectedNode!=undefined) this.selectedNode=undefined;
+    container.addEventListener('mouseup',function(e){       
+        // If mouse is released, clear selectedNode 
+        if (this.selectedNode!=undefined) this.selectedNode=undefined;        
 
+        // If a connector is selected
+        if (this.selectedConnector!=undefined) {            
+            
+            if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) { 
+                removeTempLines(); 
+                this.selectedConnector=undefined;
+                return; 
+                
+            }          
+        
 
-        if (this.selectedConnector!=undefined) {
-            if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) return;            
-            //this.removeChild(this.children['tempLine']);
             selectedConnectorRect = this.selectedConnector.getBoundingClientRect(); 
             targetConnectorRect = this.targetConnector.getBoundingClientRect(); 
 
             let origin = [selectedConnectorRect.left + selectedConnectorRect.width/2  ,selectedConnectorRect.top + selectedConnectorRect.height/2];
             let dest = [targetConnectorRect.left + targetConnectorRect.width/2 ,targetConnectorRect.top + targetConnectorRect.height/2]            
-            // console.log(origin,dest);            
             
-            let line = drawLine(origin,dest)                        
+            removeTempLines();
             
-
+            let line = drawLine(origin,dest);
             let id =document.getElementsByClassName('connectorLine').length +1;
             line.id = 'line'+id;
             this.selectedConnector.lines.push(line.id);
@@ -42,17 +62,17 @@ function pipelinePageOnLoad() {
             container.appendChild(line);
 
             // Remov temp lines 
-            removeTempLines()            
+                   
             
             console.log("Connect")   
-            this.targetConnector=undefined;            
+            this.targetConnector=undefined;                        
         }
 
-        if (this.selectedConnector!=undefined && this.targetConnector==undefined) this.selectedConnector=undefined;
+        if (this.selectedConnector!=undefined && this.targetConnector==undefined) { removeTempLines(); this.targetConnector=undefined; this.selectedConnector=undefined; }
     })
 
     container.addEventListener('mousemove',function(e){                
-        //console.log("Selected node :",this.selectedNode)
+        
         if (this.selectedConnector==undefined && this.selectedNode!=undefined) {
             let nodeRect = this.selectedNode.getBoundingClientRect();
             let containerRect = this.getBoundingClientRect();
@@ -116,8 +136,6 @@ function pipelinePageOnLoad() {
                 return;
             } 
 
-
-
             originRect = this.selectedConnector.getBoundingClientRect();
             targetRect =this.targetConnector.getBoundingClientRect();
 
@@ -139,10 +157,21 @@ function pipelinePageOnLoad() {
 
 
     })
-
+    
     container.addEventListener('click',function(e){                    
-
+        hideClass('contextMenu');
     })
+
+    container.addEventListener('contextmenu',function(e){                    
+        e.preventDefault();            
+        e.stopPropagation();            
+        hideClass('contextMenu');
+        let contextMenu = document.getElementById('containerContextMenu');
+        contextMenu.style.left=e.clientX+'px';
+        contextMenu.style.top=e.clientY+'px';
+        contextMenu.style.display='block';
+    })
+
 }
 
 function addNode(e) {
@@ -192,13 +221,38 @@ function createLine(line,lineParams) {
     return line;
 }
 
+function removeLine(line) {
+    // remove from connectors
+    let id = line.id;
+    let connectors = document.getElementsByClassName('nodeConnector')
+    for (let connector of connectors) {
+        console.log(connector.lines['id']);
+    }
+
+}
+
 function removeTempLines() {
     let tempLines = document.getElementsByClassName('tempLine');
     let tempLineCount = tempLines.length
     for (i=0;i<tempLineCount;i++) {
         tempLines[0].remove();
     }
+}
 
+function removeClass(className) {
+    let classElements = document.getElementsByClassName(className);
+    let classElementCount = classElements.length
+    for (i=0;i<classElementCount;i++) {
+        classElements[0].remove();
+    }
+}
+
+function hideClass(className) {
+    let classElements = document.getElementsByClassName(className);
+    let classElementCount = classElements.length
+    for (i=0;i<classElementCount;i++) {
+        classElements[i].style.display='none';
+    }
 }
 
 class pipelineNode {
@@ -209,23 +263,37 @@ class pipelineNode {
         // let rect = box.getBoundingClientRect();
 
         //// Event handlers
-        box.addEventListener('mousedown',function(e){
+        box.addEventListener('mousedown',function(e){            
+            // Active only on left clicks
+            if (e.button!=0) return;
             this.parentElement.selectedNode = this;
             this.offsetX = e.offsetX;
             this.offsetY = e.offsetY;
+            this.parentElement.dispatchEvent(new Event('nodeSelect'))
         })
 
         box.addEventListener('mouseup',function(e){
             this.parentElement.selectedNode = undefined;
+            this.parentElement.dispatchEvent(new Event('nodeUnselect'))
         })        
+
+        box.addEventListener('contextmenu',function(e){
+            e.preventDefault();            
+            e.stopPropagation();            
+            hideClass('contextMenu');
+            let contextMenu = document.getElementById('nodeContextMenu');
+            contextMenu.style.left=e.clientX+'px';
+            contextMenu.style.top=e.clientY+'px';
+            contextMenu.style.display='block';
+        })
 
         //// Connectors
         let bottomConnector = new connector(connectorTypes.bottom);
-        bottomConnector.style.bottom='-7px'
+        bottomConnector.style.bottom='-8px'
 
 
         let topConnector = new connector(connectorTypes.top);
-        topConnector.style.top='-7px'
+        topConnector.style.top='-8px'
 
         box.bottomConnector=bottomConnector;
         box.topConnector=topConnector;        
@@ -244,10 +312,9 @@ class connector {
         conn.className='nodeConnector';
         conn.connectorType = connectorType;
         conn.lines=[];
-        
 
         conn.addEventListener('mouseover',function(){
-            this.style.backgroundColor='red'
+            this.style.backgroundColor='#C33'
             this.parentElement.parentElement.targetConnector=this;
         })
 
@@ -258,10 +325,11 @@ class connector {
 
         conn.addEventListener('mousedown',function(){
             this.parentElement.parentElement.selectedConnector = this;
+            //this.parentElement.parentElement.dispatchEvent(new Event('mousemove'))
         })
 
         conn.addEventListener('mouseup',function(){
-
+            // this.parentElement.parentElement.selectedConnector = undefined;
         })
 
         return conn;

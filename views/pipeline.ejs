@@ -19,7 +19,7 @@
         #pipelineContainer {
             display: block;
             width: 75vw;
-            height: max(500px,50vh);
+            height: max(900px,90vh);
             background-color: #333;
             border-radius: 10px;
             user-select: none;
@@ -29,33 +29,89 @@
             display: block;
             position: absolute;
             width: 250px;
-            height: 100px;
+            height: 75px;
             border: 1px solid white;            
             border-radius: 7px;
-            background-color: #444;
+            background-color: hsla(var(--main-hue),50%,10%,0.8);
             user-select: none;
+            z-index: 0;
+            font-size: 12px;
+        }
+
+        .pipelineNode:hover {
+            background-color: hsla(var(--main-hue),50%,20%,0.8);
         }
 
         .nodeConnector {
             position: absolute;
             display: inline-block;
-            width: 10px;
-            aspect-ratio: 1;
-            border: 2px solid white;
-            background-color: white;
-            border-radius: 50%;
+            width: 15px;
+            height: 7px;
+            border: 1px solid #DDD;
+            background-color: #ddd;
+            border-radius: 10%;
             left: 50%;            
             user-select: none;
             transform: translateX(-50%);
         }
 
+        .connectorLine {
+            z-index: 0;
+        }
+
+        .contextMenu {            
+            position: absolute;
+            display: none;            
+            background-color: hsla(var(--main-hue),40%,60%,1);
+            color: black;                        
+            border-radius: 7px;
+            box-shadow: 5px 5px 5px #222;
+        }
+
+
+        .contextMenu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            border-radius: 7px;
+        }
+
+        .contextMenu li {
+            list-style: none;
+            cursor: pointer;         
+            padding: 7px;
+            line-height: 1;            
+        }
+
+        .contextMenu li:hover {
+            background-color: hsla(var(--main-hue),60%,20%,1);
+            color: white;
+            transition: all 250ms;
+        }
+
     </style>
 
     <div id="pipelineContainer">
-
         
     </div>
 
+    <div class="contextMenu" id="nodeContextMenu">
+        <ul>
+            <li command="removeNode" >Remove node</li>
+            <li command="disconnectNode">Disconnect node</li>
+            <li command="addNode">Add node</li>
+        </ul>
+    </div>
+
+    <div class="contextMenu" id="containerContextMenu">
+        <ul>
+            <li command="addNode" >Add node</li>            
+            <li command="clearFilters">Clear filters</li>
+
+        </ul>
+    </div>
+
+    
     
 </body>
 </html>
