@@ -2,6 +2,7 @@
 let container;
 let currentMode;
 let lineIndex=0;
+let nodeIndex=0;
 
 const nodeTypes = {
     capture: 0,
@@ -350,7 +351,10 @@ function clearFilter() {
 }
 
 function alignNodes() {
-    let nodes = document.getElementsByClassName('pipelineNode');
+    let nodes = [...document.getElementsByClassName('pipelineNode')];
+    let nodeWidth= nodes[0].getBoundingClientRect().width;
+    
+    
 }
 
 function autoConnect() {
@@ -367,6 +371,8 @@ class pipelineNode {
     constructor(nodeType,parentElement) {
         let box = document.createElement('div');
         box.className='pipelineNode';        
+        box.id = 'Node'+ nodeIndex;
+        nodeIndex++;
 
         // let rect = box.getBoundingClientRect();
 
