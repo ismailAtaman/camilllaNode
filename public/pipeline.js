@@ -57,10 +57,17 @@ function pipelinePageOnLoad() {
             let nodeRect = this.selectedNode.getBoundingClientRect();
             let containerRect = this.getBoundingClientRect();
 
-            // Move the box
-            let top= e.clientY  - nodeRect.height/2 ;
-            let left = e.clientX - nodeRect.width/2;
+            console.log(this.selectedNode.offsetX,this.selectedNode.offsetY)
 
+            // Move the box
+            // Consider the offset of the mouse click to object center
+            offsetX = nodeRect.width/2-this.selectedNode.offsetX;
+            offsetY = nodeRect.height/2-this.selectedNode.offsetY;
+
+            let top= e.clientY + offsetY - nodeRect.height/2 ;
+            let left = e.clientX + offsetX - nodeRect.width/2;
+
+            //// Next 4 lines makes sure we do not go out of the container object
             if (top>containerRect.bottom - nodeRect.height ) top=containerRect.bottom - nodeRect.height
             if (top<=containerRect.top) top=containerRect.top;
             
@@ -95,18 +102,30 @@ function pipelinePageOnLoad() {
         }
 
         if (this.selectedConnector!=undefined) {
-            if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) { removeTempLines(); return; }            
-
             removeTempLines();
+            if (this.targetConnector==undefined) {
+                if ( this.targetConnector==this.selectedConnector) return;            
+                let origin =  [originRect.left + originRect.width/2 , originRect.top + originRect.height/2]                
+                let target =  [e.clientX, e.clientY]
+    
+                let line = drawLine(origin,target);                        
+                line.style.borderColor='#888';
+                line.style.borderStyle='dashed';
+                line.className='tempLine'
+                container.appendChild(line);       
+                return;
+            } 
+
+
 
             originRect = this.selectedConnector.getBoundingClientRect();
             targetRect =this.targetConnector.getBoundingClientRect();
 
             let origin =  [originRect.left + originRect.width/2 , originRect.top + originRect.height/2]
             let target =  [targetRect.left + targetRect.width/2, targetRect.top + targetRect.height/2]
-
+            
             let line = drawLine(origin,target);                        
-            line.style.borderColor='red';
+            line.style.borderColor='#9C9';
             line.style.borderStyle='dashed';
             line.className='tempLine'
             container.appendChild(line);            
@@ -192,6 +211,8 @@ class pipelineNode {
         //// Event handlers
         box.addEventListener('mousedown',function(e){
             this.parentElement.selectedNode = this;
+            this.offsetX = e.offsetX;
+            this.offsetY = e.offsetY;
         })
 
         box.addEventListener('mouseup',function(e){
