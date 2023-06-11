@@ -222,7 +222,7 @@ function pipelinePageOnLoad() {
     let contextMenuItems = document.getElementsByTagName('li');
     
     for (let contextMenuItem of contextMenuItems) {
-        console.log(contextMenuItem.command)
+        
         let command = contextMenuItem.getAttribute('command');
         if (command!=undefined) {
             contextMenuItem.addEventListener('mousedown',function(e){                
@@ -371,8 +371,35 @@ function clearFilter() {
 }
 
 function alignNodes() {
-    let nodes = [...document.getElementsByClassName('pipelineNode')];
-    let nodeWidth= nodes[0].getBoundingClientRect().width;
+    return;
+    //// Sort nodes by their top position
+    let nodes = [...document.getElementsByClassName('pipelineNode')].sort((a,b)=>parseFloat(a.style.left.replace('px',''))>=parseFloat(b.style.left.replace('px','')));
+    
+    let nodeWidth= nodes[0].getBoundingClientRect().width;    
+    let nodeHeight= nodes[0].getBoundingClientRect().height;    
+    let i=0;    
+
+    while (true)  {        
+        let cNode = nodes[i];
+        let nNode = nodes[i+1];
+        if (nNode==undefined) break;
+        
+        
+        cLeft = parseFloat(cNode.style.left.replace('px',''));
+        nLeft = parseFloat(nNode.style.left.replace('px',''));
+
+        
+        console.log(cLeft,nLeft,nodeWidth,(nLeft <= cLeft + nodeWidth))
+        if (nLeft <= cLeft + nodeWidth) {
+            nNode.style.left = cNode.style.left;
+            let top = parseFloat(cNode.style.top.replace('px','')) + nodeHeight * 1.5;
+            //nNode.style.top = top+'px';            
+        }
+        i=i+1;        
+        
+    }
+
+
     
     
 }
