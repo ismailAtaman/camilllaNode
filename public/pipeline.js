@@ -83,16 +83,15 @@ function pipelinePageOnLoad() {
                 removeTempLines(); 
                 this.selectedConnector=undefined;
                 return; 
-                
             }          
         
-
+            
             selectedConnectorRect = this.selectedConnector.getBoundingClientRect(); 
             targetConnectorRect = this.targetConnector.getBoundingClientRect(); 
 
             let origin = [selectedConnectorRect.left + selectedConnectorRect.width/2  ,selectedConnectorRect.top + selectedConnectorRect.height/2];
             let dest = [targetConnectorRect.left + targetConnectorRect.width/2 ,targetConnectorRect.top + targetConnectorRect.height/2]            
-            
+        
             removeTempLines();
             
             let line = drawLine(origin,dest);
@@ -118,11 +117,11 @@ function pipelinePageOnLoad() {
 
     container.addEventListener('mousemove',function(e){                
         
+
+        //// Move the node
         if (this.selectedConnector==undefined && this.selectedNode!=undefined) {
             let nodeRect = this.selectedNode.getBoundingClientRect();
             let containerRect = this.getBoundingClientRect();
-
-            //console.log(this.selectedNode.offsetX,this.selectedNode.offsetY)
 
             // Move the box
             // Consider the offset of the mouse click to object center
@@ -146,8 +145,7 @@ function pipelinePageOnLoad() {
             //console.log(this.selectedNode.bottomConnector.lines,this.selectedNode.topConnector.lines)
             updateLine(this.selectedNode.bottomConnector.lines);
             updateLine(this.selectedNode.topConnector.lines);
-            
-            
+                        
             function updateLine(lines) {
                 for (let lineId of lines) {
                     let line = document.getElementById(lineId);
@@ -276,10 +274,24 @@ function calculateLineParams(origin,dest) {
 function createLine(line,lineParams) {
     if (line==undefined) line = document.createElement('div');
 
-    let style  = 'border:1px solid white; width:'+lineParams.length+'px; height:0px; position:absolute; left: '+lineParams.left+'px; top: '+lineParams.top+'px; transform: rotate('+lineParams.angle+'rad)';
+    let style  = 'border:2px solid white; width:'+lineParams.length+'px; height:0px; position:absolute; left: '+lineParams.left+'px; top: '+lineParams.top+'px; transform: rotate('+lineParams.angle+'rad)';
     line.setAttribute('style',style);
     line.innerText=' ';
     line.className='connectorLine';
+    line.addEventListener('mouseover',function(e){
+        e.target.style.borderColor='red'
+    })
+
+    line.addEventListener('mouseout',function(e){
+        e.target.style.borderColor='white'
+    })
+
+    line.addEventListener('dblclick',function(e){
+        e.target.remove();
+        e.stopPropagation();
+    })
+
+    
     return line;
 }
 
@@ -324,6 +336,7 @@ function executeContextMenuCommand(command,e) {
     if (command=='alignNodes') alignNodes();
     if (command=='autoConnect') autoConnect();
     if (command=='disconnectNode') disconnectNode(e.target.parentElement.parentElement.targetNode);
+    if (command=='duplicateNode') duplicateNode(e.target.parentElement.parentElement.targetNode);
     if (command=='removeNode') removeNode(e.target.parentElement.parentElement.targetNode);
 }
 
@@ -344,6 +357,13 @@ function disconnectNode(node) {
     }
     node.topConnector.lines=[];
     node.bottomConnector.lines=[];
+}
+
+function duplicateNode(node) {
+    let newNode = new pipelineNode(undefined,node.parentElement)
+    newNode.innerHTML = node.innerHTML;    
+    node.style.left='100px'
+
 }
 
 function clearFilter() {
@@ -380,16 +400,22 @@ class pipelineNode {
         box.addEventListener('mousedown',function(e){            
             // Active only on left clicks
             if (e.button!=0) return;
-            this.parentElement.selectedNode = this;
+            this.parentElement.selectedNode = this;            
             this.offsetX = e.offsetX;
             this.offsetY = e.offsetY;
             this.parentElement.dispatchEvent(new Event('nodeSelect'))
         })
 
+        
+
         box.addEventListener('mouseup',function(e){
             this.parentElement.selectedNode = undefined;
             this.parentElement.dispatchEvent(new Event('nodeUnselect'))
-        })        
+        })
+        
+        box.addEventListener('mouseover',function(e){           
+            if (this.parentElement.selectedConnector!=undefined) this.parentElement.targetConnector=this.topConnector;    
+        })
 
         box.addEventListener('contextmenu',function(e){
             e.preventDefault();            
@@ -404,10 +430,10 @@ class pipelineNode {
 
         //// Connectors
         let bottomConnector = new connector(connectorTypes.bottom);
-        bottomConnector.style.bottom='-8px'
+        bottomConnector.style.bottom='0px'
 
         let topConnector = new connector(connectorTypes.top);
-        topConnector.style.top='-8px'
+        topConnector.style.top='0px'
 
         box.bottomConnector=bottomConnector;
         box.topConnector=topConnector;        
@@ -428,12 +454,12 @@ class connector {
         conn.lines=[];
 
         conn.addEventListener('mouseover',function(){
-            this.style.backgroundColor='#C33'
+            //this.style.backgroundColor='#C33'
             this.parentElement.parentElement.targetConnector=this;
         })
 
         conn.addEventListener('mouseout',function(){
-            this.style.backgroundColor='white'
+            //this.style.backgroundColor='white'
             this.parentElement.parentElement.targetConnector=undefined;
         })
 

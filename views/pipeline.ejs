@@ -30,35 +30,50 @@
             position: absolute;
             width: 250px;
             height: 75px;
-            border: 1px solid white;            
+            border: 2px outset hsla(var(--main-hue),50%,35%,1);
+            box-shadow: 5px 5px 10px #111;
             border-radius: 7px;
-            background-color: hsla(var(--main-hue),50%,10%,0.8);
+            background-color: hsla(var(--main-hue),50%,20%,1);
             user-select: none;
-            z-index: 0;
+            z-index: 10;
             font-size: 12px;
+            cursor:move;
         }
 
         .pipelineNode:hover {
-            background-color: hsla(var(--main-hue),50%,20%,0.8);
+            background-color: hsla(var(--main-hue),60%,25%,1);
+        }
+
+        .pipelineNode:hover .nodeConnector {
+            width: 25%;
+            height: 15px;            
+            border-radius: none;
         }
 
         .nodeConnector {
-            position: absolute;
             display: inline-block;
-            width: 15px;
-            height: 7px;
-            border: 1px solid #DDD;
-            background-color: #ddd;
+            position: absolute;            
+            width: 0px;
+            height: 0px;            
+            background-color: hsla(var(--main-hue),60%,35%,0);
             border-radius: 10%;
             left: 50%;            
             user-select: none;
-            transform: translateX(-50%);
+            transform: translateX(-50%);            
+            cursor:default;
+        }
+
+        .nodeConnector:hover { 
+            background-color: hsla(calc(0 + var(--main-hue)),60%,35%,0.8);
         }
 
         .connectorLine {
+            background-color: white;
             z-index: 0;
         }
 
+
+        /************************************************* Context Menu  **************************/
         .contextMenu {            
             position: absolute;
             display: none;            
@@ -66,6 +81,7 @@
             color: black;                        
             border-radius: 7px;
             box-shadow: 5px 5px 5px #222;
+            z-index: 20;
         }
 
 
@@ -92,16 +108,102 @@
             transition: all 250ms;
         }
 
+        /************************************************* Configuration Box  **************************/
+        #configBox {
+            display: block;            
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 60vw;
+            height: 60vh;
+            background-color: hsla(var(--main-hue),40%,30%,0.9);
+            border: 2px outset hsla(var(--main-hue),40%,40%,1);
+            border-radius: 10px;
+            box-shadow: 10px 10px 15px #111;
+            z-index: 1000;
+        }
+
+        #commandBox {              
+            position:relative;                               
+            margin: 10px;
+        }
+
+        #configTitle {
+            font-size: 18px;
+            appearance: none;
+            border: none;
+            width: calc(100% - 20px);
+            background: linear-gradient(90deg,hsla(var(--main-hue),40%,10%,0.9),hsla(var(--main-hue),40%,30%,0.9));
+            color: white;            
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 10px;
+        }
+
+        #configFilters {
+            display: grid;
+            grid-template-columns: 1fr;                        
+            gap: 2px;
+            margin: 10px;
+            width: calc(100% - 20px);
+            height: calc(100% - 125px);
+            border-radius: 10px;
+            background: linear-gradient(135deg,hsla(var(--main-hue),40%,10%,1),hsla(var(--main-hue),40%,15%,1));
+            overflow-y: scroll;
+        }
+
+        #configFilters div {            
+            height: 75px;
+            padding: 5px;
+            background-color: hsla(var(--main-hue),20%,25%,1);
+            border: 1px solid black;
+            font-size: 14px;
+        }
+
+        #configFilters div:first-child {
+            border-radius: 10px 10px 0 0;
+        }
+
+
     </style>
 
     <div id="pipelineContainer">
         
     </div>
 
+    <div id="configBox">
+        <div id="configTitleBox">
+            <input type="text" name="" id="configTitle" value="Configuration Name">
+        </div>
+        <div id="configFilters">
+            <div>a</div>
+            <div>b</div>
+            <div>c</div>
+            <div>a</div>
+            <div>b</div>
+            <div>c</div>
+            <div>a</div>
+            <div>b</div>
+            <div>c</div>
+            <div>a</div>
+            <div>b</div>
+            <div>c</div>
+        </div>
+
+        <div id="commandBox">
+            <div class="button">Save</div>
+            <div class="button">Cancel</div>
+        </div>
+    </div>
+
+    <!------------------------------------- Context Menu  -->
+
     <div class="contextMenu" id="nodeContextMenu">
         <ul>
             <li command="removeNode" >Remove node</li>
             <li command="disconnectNode">Disconnect node</li>
+            <li command="duplicateNode">Duplicate node</li>
             <li command="addNode">Add node</li>
         </ul>
     </div>
