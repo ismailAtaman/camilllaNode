@@ -4,13 +4,13 @@ let currentMode;
 let lineIndex=0;
 let nodeIndex=0;
 
-const nodeTypes = {
+const nodeSubTypes = {
     capture: 0,
     playback: 1,
     filter: 2
 }
 
-const nodeSubType = {
+const nodeTypes = {
     device: 1,
     filter: 2,
     mixer:  4,
@@ -46,46 +46,50 @@ const pIn = {"name":"In","dataType":"num","unit":" channels","default":2,"min":2
 const pOut = {"name":"Out","dataType":"num","unit":" channels","default":2,"min":2,"max":16};
 
 
-const Invert =    {"name":"Invert","type": nodeSubType.filter, "params":[pOnOff]};
-const Gain =      {"name":"Gain","type": nodeSubType.filter, "params":[pGain]};
-const Volume =    {"name":"Volume","type": nodeSubType.filter, "params":[pLevel]}; 
-const Delay =     {"name":"Delay","type": nodeSubType.filter, "params":[pUnit,pDelay,pSubsample]} 
-const Highpass =  {"name":"Highpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
-const Lowpass =   {"name":"Lowpass","type": nodeSubType.filter, "params":[pFrequency,pQ]}; 
-const Highself =  {"name":"Highshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
-const Lowshelf =  {"name":"Lowshelf","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
-const Peaking =   {"name":"Peaking","type": nodeSubType.filter, "params":[pFrequency,pGain,pQ]}; 
-const Bandpass =  {"name":"Bandpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
-const Allpass =   {"name":"Allpass","type": nodeSubType.filter, "params":[pFrequency,pBandwidth]}; 
-const Linkwitz =  {"name":"Linkwitz","type": nodeSubType.filter, "params":[pActualFrequency,pActualQ,pTargetFrequency,pTargetQ]}; 
-const Dither =    {"name":"Dither","type": nodeSubType.other, "params":[pDither]}; 
-const Mixer =     {"name":"Mixer","type": nodeSubType.mixer, "params":[pIn,pOut]};
-const Equalizer = {"name":"Equalizer","type": nodeSubType.equalizer, "params":[{"name":"Equalizer","dataType":"function","function":showEQ}]};
+const Invert =    {"name":"Invert","type": nodeTypes.filter, "params":[pOnOff]};
+const Gain =      {"name":"Gain","type": nodeTypes.filter, "params":[pGain]};
+const Volume =    {"name":"Volume","type": nodeTypes.filter, "params":[pLevel]}; 
+const Delay =     {"name":"Delay","type": nodeTypes.filter, "params":[pUnit,pDelay,pSubsample]} 
+const Highpass =  {"name":"Highpass","type": nodeTypes.filter, "params":[pFrequency,pQ]}; 
+const Lowpass =   {"name":"Lowpass","type": nodeTypes.filter, "params":[pFrequency,pQ]}; 
+const Highself =  {"name":"Highshelf","type": nodeTypes.filter, "params":[pFrequency,pGain,pQ]}; 
+const Lowshelf =  {"name":"Lowshelf","type": nodeTypes.filter, "params":[pFrequency,pGain,pQ]}; 
+const Peaking =   {"name":"Peaking","type": nodeTypes.filter, "params":[pFrequency,pGain,pQ]}; 
+const Bandpass =  {"name":"Bandpass","type": nodeTypes.filter, "params":[pFrequency,pBandwidth]}; 
+const Allpass =   {"name":"Allpass","type": nodeTypes.filter, "params":[pFrequency,pBandwidth]}; 
+const Linkwitz =  {"name":"Linkwitz","type": nodeTypes.filter, "params":[pActualFrequency,pActualQ,pTargetFrequency,pTargetQ]}; 
+const Dither =    {"name":"Dither","type": nodeTypes.other, "params":[pDither]}; 
+const Mixer =     {"name":"Mixer","type": nodeTypes.mixer, "params":[pIn,pOut]};
+const Equalizer = {"name":"Equalizer","type": nodeTypes.equalizer, "params":[{"name":"Equalizer","dataType":"function","function":showEQ}]};
 
 const nodeTypeList = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshelf,Peaking,Bandpass,Allpass,Linkwitz,Dither,Mixer,Equalizer]
 
 function pipelinePageOnLoad() {
     container = document.getElementById('pipelineContainer');
-    addNode()
 
     container.addEventListener('dblclick',function(e){
         addNode(e);    
     })
 
+    container.addEventListener('nodeSelect',function(e){        
+    })
+
+    container.addEventListener('nodeDeselect',function(e){        
+    })
+
     container.addEventListener('mouseup',function(e){       
         // If mouse is released, clear selectedNode 
         if (this.selectedNode!=undefined) this.selectedNode=undefined;        
+        
 
         // If a connector is selected
-        if (this.selectedConnector!=undefined) {            
-            
+        if (this.selectedConnector!=undefined) {                        
             if (this.targetConnector==undefined || this.targetConnector==this.selectedConnector) { 
                 removeTempLines(); 
                 this.selectedConnector=undefined;
                 return; 
             }          
         
-            
             selectedConnectorRect = this.selectedConnector.getBoundingClientRect(); 
             targetConnectorRect = this.targetConnector.getBoundingClientRect(); 
 
@@ -115,8 +119,8 @@ function pipelinePageOnLoad() {
         if (this.selectedConnector!=undefined && this.targetConnector==undefined) { removeTempLines(); this.targetConnector=undefined; this.selectedConnector=undefined; }
     })
 
-    container.addEventListener('mousemove',function(e){                
-        
+    container.addEventListener('mousemove',function(e){        
+        //console.log("Node : ",this.selectedNode!=undefined," Sel Con :",this.selectedConnector!=undefined,"Tar Con :",this.targetConnector!=undefined)
 
         //// Move the node
         if (this.selectedConnector==undefined && this.selectedNode!=undefined) {
@@ -137,6 +141,12 @@ function pipelinePageOnLoad() {
             
             if (left>containerRect.right -nodeRect.width) left=containerRect.right -nodeRect.width;
             if (left<=containerRect.left) left=containerRect.left;
+
+            // Snap to grid 
+            left = Math.round(left / 10)*10;
+            top = Math.round(top / 10)*10;
+
+            // console.log(left,top);
 
             this.selectedNode.style.top = top + 'px';
             this.selectedNode.style.left = left +'px';        
@@ -166,9 +176,11 @@ function pipelinePageOnLoad() {
             return;
         }
 
+        /// Draw connector lines
         if (this.selectedConnector!=undefined) {
             removeTempLines();
             if (this.targetConnector==undefined) {
+                
                 if ( this.targetConnector==this.selectedConnector) return;            
                 let origin =  [originRect.left + originRect.width/2 , originRect.top + originRect.height/2]                
                 let target =  [e.clientX, e.clientY]
@@ -233,16 +245,93 @@ function pipelinePageOnLoad() {
     }    
 
 
+    // Create capture and playback devices
+    loadPipelineFromConfig();
+
+
 }
 
-function addNode(e) {
-    let node = new pipelineNode(undefined,container);        
+async function loadPipelineFromConfig() {
+    await connectToDsp();
+    downloadConfigFromDSP().then(DSPConfig=>{
+        // console.log(DSPConfig)
+        let capture = DSPConfig.devices.capture;
+        let playback = DSPConfig.devices.playback;
+
+        for (i=0;i<capture.channels;i++) {
+            let newNode = addNode(undefined,nodeTypes.device);
+            newNode.nodeSubType = nodeSubTypes.capture;
+
+            newNode.style.display='grid';
+            newNode.style.justifyContent = 'center'
+
+            newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
+            let device = document.createElement('div')
+            device.innerText+=capture.device+'\n';
+            newNode.appendChild(device);
+
+            let format = document.createElement('div')
+            format.innerText+=capture.format+'\n';
+            newNode.appendChild(format);
+
+            let channel = document.createElement('div')
+            channel.innerText+='Channel '+i+'\n';
+            newNode.appendChild(channel);           
+
+            newNode.children['topConnector'].remove();
+
+        }
+
+
+        for (i=0;i<playback.channels;i++) {
+            let newNode = addNode(undefined,nodeTypes.device);
+            newNode.nodeSubType = nodeSubTypes.playback;
+
+
+            newNode.style.display='grid';
+            newNode.style.justifyContent = 'center'
+
+            newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
+            newNode.style.top = container.getBoundingClientRect().height-50+'px';
+
+            let device = document.createElement('div')
+            device.innerText+=playback.device+'\n';
+            newNode.appendChild(device);
+
+            let format = document.createElement('div')
+            format.innerText+=playback.format+'\n';
+            newNode.appendChild(format);
+
+            let channel = document.createElement('div')
+            channel.innerText+='Channel '+i+'\n';
+            newNode.appendChild(channel);           
+
+            newNode.children['bottomConnector'].remove();
+        }
+
+        
+        let sameFilters = arrayEquals(DSPConfig.pipeline[0].names,DSPConfig.pipeline[1].names);
+        if (sameFilters) loadFiltersToConfigBox(DSPConfig.filters)
+    }) 
+}
+
+function addNode(e,nodeType) {
+    let node = new pipelineNode(nodeType,container);        
     let rect = node.getBoundingClientRect();
-    if (e==undefined) {
-        e= {"clientX":container.getBoundingClientRect().left+400,"clientY":container.getBoundingClientRect().top+100}
+    if (e==undefined) {        
+        e= {"clientX":container.getBoundingClientRect().left+150,"clientY":container.getBoundingClientRect().top+60}
     }
-    node.style.left = e.clientX - rect.width/2 + 'px';
-    node.style.top = e.clientY - rect.height/2 +'px';
+    let left = e.clientX - rect.width/2;
+    let top = e.clientY - rect.height/2;
+
+    // snap to grid 
+    left = Math.round(left / 10)*10;
+    top = Math.round(top / 10)*10;
+
+    node.style.left = left + 'px';
+    node.style.top = top + 'px';
+
+    return node;
 }
 
 function drawLine(origin,dest) {      
@@ -361,7 +450,9 @@ function disconnectNode(node) {
 
 function duplicateNode(node) {
     let newNode = new pipelineNode(undefined,node.parentElement)
-    newNode.innerHTML = node.innerHTML;    
+    let id = newNode.id;
+    newNode.outerHTML = node.outerHTML;    
+    newNode.id = id;
     node.style.left='100px'
 
 }
@@ -407,9 +498,22 @@ function alignNodes() {
 function autoConnect() {
 }
 
-
-
 function showEQ() {
+
+}
+
+
+function loadFiltersToConfigBox(filterObject) {
+    let configFiltersElement = document.getElementById('configFilters');
+    console.log(filterObject)
+    for (let filter in filterObject) {
+        let filterElement = document.createElement('div');
+        filterElement.innerText=filterObject[filter].parameters.type;
+        configFiltersElement.appendChild(filterElement);
+        console.log(filter,filterObject[filter].parameters);
+    }
+
+
 
 }
 
@@ -434,14 +538,17 @@ class pipelineNode {
         })
 
         
-
         box.addEventListener('mouseup',function(e){
-            this.parentElement.selectedNode = undefined;
+            this.parentElement.selectedNode = undefined;            
             this.parentElement.dispatchEvent(new Event('nodeUnselect'))
         })
         
         box.addEventListener('mouseover',function(e){           
             if (this.parentElement.selectedConnector!=undefined) this.parentElement.targetConnector=this.topConnector;    
+        })
+
+        box.addEventListener('mouseout',function(e){           
+            if (this.parentElement.selectedConnector!=undefined) this.parentElement.targetConnector=undefined;   
         })
 
         box.addEventListener('contextmenu',function(e){
@@ -457,10 +564,12 @@ class pipelineNode {
 
         //// Connectors
         let bottomConnector = new connector(connectorTypes.bottom);
-        bottomConnector.style.bottom='0px'
+        bottomConnector.style.bottom='0px';
+        bottomConnector.id = 'bottomConnector';
 
         let topConnector = new connector(connectorTypes.top);
         topConnector.style.top='0px'
+        topConnector.id = 'topConnector';
 
         box.bottomConnector=bottomConnector;
         box.topConnector=topConnector;        
@@ -491,12 +600,13 @@ class connector {
         })
 
         conn.addEventListener('mousedown',function(){
-            this.parentElement.parentElement.selectedConnector = this;
+            if (this.id=='bottomConnector') this.parentElement.parentElement.selectedConnector = this;
             //this.parentElement.parentElement.dispatchEvent(new Event('mousemove'))
         })
 
         conn.addEventListener('mouseup',function(){
             // this.parentElement.parentElement.selectedConnector = undefined;
+            // this.parentElement.parentElement.targetConnector = undefined;
         })
 
         return conn;

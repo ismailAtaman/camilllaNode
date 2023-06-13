@@ -28,8 +28,8 @@
         .pipelineNode {
             display: block;
             position: absolute;
-            width: 250px;
-            height: 75px;
+            width: 246px;
+            height: 76px;
             border: 2px outset hsla(var(--main-hue),50%,35%,1);
             box-shadow: 5px 5px 10px #111;
             border-radius: 7px;
@@ -42,6 +42,11 @@
 
         .pipelineNode:hover {
             background-color: hsla(var(--main-hue),60%,25%,1);
+        }
+
+        .pipelineNode div {
+            font-size: 16px;
+            text-align: center;
         }
 
         .pipelineNode:hover .nodeConnector {
@@ -61,7 +66,10 @@
             user-select: none;
             transform: translateX(-50%);            
             cursor:default;
+            z-index: 1000;            
         }
+
+        
 
         .nodeConnector:hover { 
             background-color: hsla(calc(0 + var(--main-hue)),60%,35%,0.8);
@@ -69,6 +77,7 @@
 
         .connectorLine {
             background-color: white;
+            box-shadow: 5px 5px 10px #111;
             z-index: 0;
         }
 
@@ -177,23 +186,11 @@
             <input type="text" name="" id="configTitle" value="Configuration Name">
         </div>
         <div id="configFilters">
-            <div>a</div>
-            <div>b</div>
-            <div>c</div>
-            <div>a</div>
-            <div>b</div>
-            <div>c</div>
-            <div>a</div>
-            <div>b</div>
-            <div>c</div>
-            <div>a</div>
-            <div>b</div>
-            <div>c</div>
         </div>
 
         <div id="commandBox">
             <div class="button">Save</div>
-            <div class="button">Cancel</div>
+            <div class="button" onclick="this.parentElement.parentElement.style.display='none';">Cancel</div>
         </div>
     </div>
 
