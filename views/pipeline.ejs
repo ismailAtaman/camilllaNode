@@ -119,7 +119,7 @@
 
         /************************************************* Configuration Box  **************************/
         #configBox {
-            display: block;            
+            display: none;            
             position: absolute;
             left: 50%;
             top: 50%;
@@ -138,11 +138,11 @@
             margin: 10px;
         }
 
-        #configTitle {
-            font-size: 18px;
+        #configTitle {            
             appearance: none;
             border: none;
             width: calc(100% - 20px);
+            font-size: 18px;
             background: linear-gradient(90deg,hsla(var(--main-hue),40%,10%,0.9),hsla(var(--main-hue),40%,30%,0.9));
             color: white;            
             padding: 10px;
@@ -152,7 +152,7 @@
 
         #configFilters {
             display: grid;
-            grid-template-columns: 1fr;                        
+            grid-template-columns: 1fr 1fr;                                    
             gap: 2px;
             margin: 10px;
             width: calc(100% - 20px);
@@ -171,7 +171,11 @@
         }
 
         #configFilters div:first-child {
-            border-radius: 10px 10px 0 0;
+            border-radius: 10px 0px 0 0;
+        }
+
+        #configFilters div:hover {   
+            background-color: hsla(var(--main-hue),35%,30%,1);
         }
 
 
@@ -190,6 +194,7 @@
 
         <div id="commandBox">
             <div class="button">Save</div>
+            <div class="button">EQ View</div>
             <div class="button" onclick="this.parentElement.parentElement.style.display='none';">Cancel</div>
         </div>
     </div>
@@ -199,6 +204,7 @@
     <div class="contextMenu" id="nodeContextMenu">
         <ul>
             <li command="removeNode" >Remove node</li>
+            <li command="acrossAllChannels" >Span across all channels</li>
             <li command="disconnectNode">Disconnect node</li>
             <li command="duplicateNode">Duplicate node</li>
             <li command="addNode">Add node</li>

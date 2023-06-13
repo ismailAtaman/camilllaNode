@@ -3,6 +3,7 @@ let container;
 let currentMode;
 let lineIndex=0;
 let nodeIndex=0;
+let DSPConfig;
 
 const nodeSubTypes = {
     capture: 0,
@@ -253,8 +254,9 @@ function pipelinePageOnLoad() {
 
 async function loadPipelineFromConfig() {
     await connectToDsp();
-    downloadConfigFromDSP().then(DSPConfig=>{
+    downloadConfigFromDSP().then(tDSPConfig=>{
         // console.log(DSPConfig)
+        DSPConfig=tDSPConfig;
         let capture = DSPConfig.devices.capture;
         let playback = DSPConfig.devices.playback;
 
@@ -311,7 +313,19 @@ async function loadPipelineFromConfig() {
 
         
         let sameFilters = arrayEquals(DSPConfig.pipeline[0].names,DSPConfig.pipeline[1].names);
-        if (sameFilters) loadFiltersToConfigBox(DSPConfig.filters)
+        if (sameFilters) {
+            loadFiltersToConfigBox(DSPConfig.filters); 
+            let newNode = addNode(undefined,nodeTypes.filter);
+            pipelineNode.span(newNode,DSPConfig.devices.playback.channels);
+            let aboveNodePos = pipelineNode.getPosition(pipelineNode.getAdjacentNodeAbove(newNode));
+            let newNodePos = pipelineNode.getPosition(newNode);
+            pipelineNode.position(newNode,newNodePos.left, aboveNodePos.top+150);
+            
+
+        } else {
+
+
+        }
     }) 
 }
 
@@ -425,8 +439,10 @@ function executeContextMenuCommand(command,e) {
     if (command=='alignNodes') alignNodes();
     if (command=='autoConnect') autoConnect();
     if (command=='disconnectNode') disconnectNode(e.target.parentElement.parentElement.targetNode);
+    if (command=='acrossAllChannels') acrossAllChannels(e.target.parentElement.parentElement.targetNode);
     if (command=='duplicateNode') duplicateNode(e.target.parentElement.parentElement.targetNode);
     if (command=='removeNode') removeNode(e.target.parentElement.parentElement.targetNode);
+    
 }
 
 
@@ -446,6 +462,11 @@ function disconnectNode(node) {
     }
     node.topConnector.lines=[];
     node.bottomConnector.lines=[];
+}
+
+function acrossAllChannels(node) {
+    let channels = DSPConfig.devices.playback.channels;    
+    pipelineNode.span(node,channels);
 }
 
 function duplicateNode(node) {
@@ -505,12 +526,12 @@ function showEQ() {
 
 function loadFiltersToConfigBox(filterObject) {
     let configFiltersElement = document.getElementById('configFilters');
-    console.log(filterObject)
+    //console.log(filterObject)
     for (let filter in filterObject) {
         let filterElement = document.createElement('div');
         filterElement.innerText=filterObject[filter].parameters.type;
         configFiltersElement.appendChild(filterElement);
-        console.log(filter,filterObject[filter].parameters);
+        //console.log(filter,filterObject[filter].parameters);
     }
 
 
@@ -523,6 +544,7 @@ class pipelineNode {
         let box = document.createElement('div');
         box.className='pipelineNode';        
         box.id = 'Node'+ nodeIndex;
+        box.setAttribute('nodeType',nodeType);
         nodeIndex++;
 
         // let rect = box.getBoundingClientRect();
@@ -580,6 +602,32 @@ class pipelineNode {
         parentElement.appendChild(box);
         return box;
     }
+
+    static span(node,columns) {
+        let width = node.getBoundingClientRect().width;
+        node.style.width = width * columns + 'px';
+    }
+
+    static position(node, left,top) {
+        node.style.left = left+'px';
+        node.style.top = top+'px';
+    }
+
+    static getAdjacentNodeAbove(node) {
+        // create a sorted list of nodes by top
+        let nodes = [...document.getElementsByClassName('pipelineNode')].sort((a,b)=>{ return parseInt(a.style.top.replace('px','')) > parseInt(b.style.top.replace('px',''))})
+        for (i=0;i<nodes.length;i++) {
+            if (nodes[i].id==node.id) {
+                if (i==0) return node; else return document.getElementById(nodes[i-1].id);
+            }
+        }        
+    }
+
+    static getPosition(node) {
+        return {"left":parseInt(node.style.left.replace('px','')),"top":parseInt(node.style.top.replace('px',''))}
+    }
+    
+
 }
 
 class connector {        
