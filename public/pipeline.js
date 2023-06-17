@@ -68,8 +68,20 @@ const nodeTypeList = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshel
 function pipelinePageOnLoad() {
     container = document.getElementById('pipelineContainer');
 
+    // resize 
+    let tmpNode = new pipelineNode(undefined,container);    
+
+    container.style.width= tmpNode.getBoundingClientRect().width * 6 + 'px';
+    container.style.height= tmpNode.getBoundingClientRect().height * 6 + 'px';
+    container.removeChild(tmpNode);
+    tmpNode=undefined;
+
+
     container.addEventListener('dblclick',function(e){
-        addNode(e);    
+        let node = new pipelineNode(undefined,container);        
+        let nodeRect = node.getBoundingClientRect()        
+        console.log(e.clientX,e.clientY)       
+        pipelineNode.position(node,e.clientX - nodeRect.width/2 ,e.clientY - nodeRect.height/2);    
     })
 
     container.addEventListener('nodeSelect',function(e){        
@@ -122,7 +134,7 @@ function pipelinePageOnLoad() {
 
     container.addEventListener('mousemove',function(e){        
         //console.log("Node : ",this.selectedNode!=undefined," Sel Con :",this.selectedConnector!=undefined,"Tar Con :",this.targetConnector!=undefined)
-
+        
         //// Move the node
         if (this.selectedConnector==undefined && this.selectedNode!=undefined) {
             let nodeRect = this.selectedNode.getBoundingClientRect();
@@ -130,22 +142,25 @@ function pipelinePageOnLoad() {
 
             // Move the box
             // Consider the offset of the mouse click to object center
-            offsetX = nodeRect.width/2-this.selectedNode.offsetX;
-            offsetY = nodeRect.height/2-this.selectedNode.offsetY;
+            let offsetX = nodeRect.width/2-this.selectedNode.offsetX;
+            let offsetY = nodeRect.height/2-this.selectedNode.offsetY;
 
-            let top= e.clientY + offsetY - nodeRect.height/2 ;
-            let left = e.clientX + offsetX - nodeRect.width/2;
+            console.log(containerRect.top,containerRect.left)
+
+            let top = e.clientY - containerRect.top;// + offsetY - nodeRect.height/2 ;
+            let left= e.clientX;// - containerRect.left + offsetX - nodeRect.width/2;
+           
 
             //// Next 4 lines makes sure we do not go out of the container object
-            if (top>containerRect.bottom - nodeRect.height ) top=containerRect.bottom - nodeRect.height
-            if (top<=containerRect.top) top=containerRect.top;
+            // if (top>containerRect.bottom - nodeRect.height ) top=containerRect.bottom - nodeRect.height
+            // if (top<=containerRect.top) top=containerRect.top;
             
-            if (left>containerRect.right -nodeRect.width) left=containerRect.right -nodeRect.width;
-            if (left<=containerRect.left) left=containerRect.left;
+            // if (left>containerRect.right -nodeRect.width) left=containerRect.right -nodeRect.width;
+            // if (left<=containerRect.left) left=containerRect.left;
 
             // Snap to grid 
-            left = Math.round(left / 10)*10;
-            top = Math.round(top / 10)*10;
+            left = Math.round(left / 10) * 10;
+            top = Math.round(top / 10) * 10;
 
             // console.log(left,top);
 
@@ -216,7 +231,8 @@ function pipelinePageOnLoad() {
 
     })
     
-    container.addEventListener('click',function(e){                    
+    container.addEventListener('click',function(e){             
+        
         hideClass('contextMenu');
     })
 
@@ -247,7 +263,7 @@ function pipelinePageOnLoad() {
 
 
     // Create capture and playback devices
-    loadPipelineFromConfig();
+    //loadPipelineFromConfig();
 
 
 }
@@ -261,7 +277,7 @@ async function loadPipelineFromConfig() {
         let playback = DSPConfig.devices.playback;
 
         for (i=0;i<capture.channels;i++) {
-            let newNode = addNode(undefined,nodeTypes.device);
+            let newNode = new pipelineNode(nodeTypes.device,container);
             newNode.nodeSubType = nodeSubTypes.capture;
 
             newNode.style.display='grid';
@@ -286,7 +302,7 @@ async function loadPipelineFromConfig() {
 
 
         for (i=0;i<playback.channels;i++) {
-            let newNode = addNode(undefined,nodeTypes.device);
+            let newNode = new pipelineNode(nodeTypes.device,container);
             newNode.nodeSubType = nodeSubTypes.playback;
 
 
@@ -313,6 +329,7 @@ async function loadPipelineFromConfig() {
 
         
         let sameFilters = arrayEquals(DSPConfig.pipeline[0].names,DSPConfig.pipeline[1].names);
+        return;
         if (sameFilters) {
             loadFiltersToConfigBox(DSPConfig.filters); 
             let newNode = addNode(undefined,nodeTypes.filter);
@@ -336,24 +353,6 @@ async function loadPipelineFromConfig() {
     }) 
 }
 
-function addNode(e,nodeType) {
-    let node = new pipelineNode(nodeType,container);        
-    let rect = node.getBoundingClientRect();
-    if (e==undefined) {        
-        e= {"clientX":(container.getBoundingClientRect().width-node.getBoundingClientRect().width)/2,"clientY":container.getBoundingClientRect().top+60}
-    }
-    let left = e.clientX - rect.width/2;
-    let top = e.clientY - rect.height/2;
-
-    // snap to grid 
-    left = Math.round(left / 10)*10;
-    top = Math.round(top / 10)*10;
-
-    node.style.left = left + 'px';
-    node.style.top = top + 'px';
-
-    return node;
-}
 
 function drawLine(origin,dest) {      
     let lineParams = calculateLineParams(origin,dest)    
@@ -517,8 +516,6 @@ function alignNodes() {
         i=i+1;        
         
     }
-
-
     
     
 }
@@ -540,9 +537,6 @@ function loadFiltersToConfigBox(filterObject) {
         configFiltersElement.appendChild(filterElement);
         //console.log(filter,filterObject[filter].parameters);
     }
-
-
-
 }
 
 
@@ -611,13 +605,24 @@ class pipelineNode {
     }
 
     static span(node,columns) {
+        // Update width
         let width = node.getBoundingClientRect().width;
         node.style.width = width * columns + 'px';
+
+        // Update connectors
     }
 
-    static position(node, left,top) {
+    static position(node, left, top) {                
+        let parentRect = node.parentElement.getBoundingClientRect();        
+        console.log(node.parentElement);
+
+        left = left - parentRect.left;
+        top = top - parentRect.top;
+
         node.style.left = left+'px';
         node.style.top = top+'px';
+
+        console.log("Node",left,top)       
     }
 
     static getAdjacentNodeAbove(node) {
