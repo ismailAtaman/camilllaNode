@@ -267,7 +267,7 @@ async function loadPipelineFromConfig() {
             newNode.style.display='grid';
             newNode.style.justifyContent = 'center'
 
-            newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
+            //newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
             let device = document.createElement('div')
             device.innerText+=capture.device+'\n';
             newNode.appendChild(device);
@@ -293,7 +293,7 @@ async function loadPipelineFromConfig() {
             newNode.style.display='grid';
             newNode.style.justifyContent = 'center'
 
-            newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
+            //newNode.style.left = 150 + (newNode.getBoundingClientRect().width + 20) * (i) + 'px';
             newNode.style.top = container.getBoundingClientRect().height-50+'px';
 
             let device = document.createElement('div')
@@ -321,6 +321,13 @@ async function loadPipelineFromConfig() {
             let newNodePos = pipelineNode.getPosition(newNode);
             pipelineNode.position(newNode,newNodePos.left, aboveNodePos.top+150);
             
+            let button = document.createElement('div')
+            button.className='button';
+            button.innerText='Equalizer';
+            button.addEventListener('click',function(){
+                document.getElementById('configBox').style.display='block';
+            })
+            newNode.appendChild(button)
 
         } else {
 
@@ -333,7 +340,7 @@ function addNode(e,nodeType) {
     let node = new pipelineNode(nodeType,container);        
     let rect = node.getBoundingClientRect();
     if (e==undefined) {        
-        e= {"clientX":container.getBoundingClientRect().left+150,"clientY":container.getBoundingClientRect().top+60}
+        e= {"clientX":(container.getBoundingClientRect().width-node.getBoundingClientRect().width)/2,"clientY":container.getBoundingClientRect().top+60}
     }
     let left = e.clientX - rect.width/2;
     let top = e.clientY - rect.height/2;
