@@ -68,7 +68,7 @@ const nodeTypeList = [Invert,Gain,Volume,Delay,Highpass,Lowpass,Highself,Lowshel
 function pipelinePageOnLoad() {
     container = document.getElementById('pipelineContainer');
 
-    // resize 
+    // Resize 
     let tmpNode = new pipelineNode(undefined,container);    
 
     container.style.width= tmpNode.getBoundingClientRect().width * 6 + 'px';
@@ -78,6 +78,9 @@ function pipelinePageOnLoad() {
 
 
     container.addEventListener('dblclick',function(e){
+        let r = createPipelineRow();
+        this.appendChild(r);
+        return;
         let node = new pipelineNode(undefined,container);        
         let nodeRect = node.getBoundingClientRect()        
         console.log(e.clientX,e.clientY)       
@@ -436,6 +439,21 @@ function hideClass(className) {
     for (i=0;i<classElementCount;i++) {
         classElements[i].style.display='none';
     }
+}
+
+function createPipelineRow() {
+    let r = document.createElement('div');
+    r.className='pipelineRow';
+    r.setAttribute('lineindex',lineIndex)
+    lineIndex++;
+    r.addEventListener('dblclick',function(event){
+        event.stopPropagation();
+        let e = document.createElement('div');
+        e.className='pipelineNode';        
+        this.appendChild(e);
+    })
+
+    return r;
 }
 
 /// Context menu functions 

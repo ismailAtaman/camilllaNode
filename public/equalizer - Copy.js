@@ -43,12 +43,12 @@ async function EQPageOnload() {
 
              canvasClick();
 
-            //  fetch('/getConfigName').then((res)=>res.text().then(data=>{
-            //     let config =JSON.parse(JSON.parse(data));
-            //     //console.log(config)
-            //     document.getElementById("configName").value=config.configName;
-            //     document.getElementById("configShortcut").value=config.configShortcut;        
-            // }))
+             fetch('/getConfigName').then((res)=>res.text().then(data=>{
+                let config =JSON.parse(JSON.parse(data));
+                //console.log(config)
+                document.getElementById("configName").value=config.configName;
+                document.getElementById("configShortcut").value=config.configShortcut;        
+            }))
     })
     // }) 
 
@@ -286,11 +286,6 @@ async function EQPageOnload() {
     window.addEventListener('click',()=>document.getElementById('EQcontextMenu').style.display='none')
     document.getElementById('equalizer').addEventListener('dblclick',()=>{addBand()})
 
-    let lastConfig = window.localStorage.getItem('lastConfig');
-    if (lastConfig!=null) {
-        
-    } 
-
 }
 
 /// Helper functions
@@ -304,9 +299,6 @@ function uploadClick() {
     let currentConfig = {"configName":configName,"configShortcut":configShortcut};
 
     uploadConfigToDSP(filterArray,currentConfig).then(displayMessage("Upload successful",{"type":"success"})).catch(err=>{displayMessage("Failed to upload EQ configuration",{"type":"error"}); console.log(err)});
-    // Update last used config
-    let accessKey= document.getElementById("configShortcut").value
-    window.localStorage.setItem('lastConfig',JSON.stringify({"configName":configName,"accessKey":accessKey}));
     
 }
 
@@ -485,19 +477,15 @@ function saveConfigClick() {
         return;
     }
 
-    let filterArray=EQSlider.createFilterArray();      
-    let accessKey= document.getElementById("configShortcut").value
-    saveConfigToLocalStorage({"configName":configName,"accessKey":accessKey,"filterArray":filterArray});
+    fetch('/configExists?configName='+configName).then((res)=>res.text().then(data=>{
+        if (data=='true' && !confirm('Configuration with a same name already exists. Would you like to overwrite?')) return;       
 
-    // fetch('/configExists?configName='+configName).then((res)=>res.text().then(data=>{
-    //     if (data=='true' && !confirm('Configuration with a same name already exists. Would you like to overwrite?')) return;       
-
-    //     let filterArray=EQSlider.createFilterArray();      
-    //     let accessKey= document.getElementById("configShortcut").value
-    //     saveConfig(({"configName":configName,"accessKey":accessKey,"filterArray":filterArray}));
-    //     configNameObject.value='';
-    //     updateConfigList();
-    // }));   
+        let filterArray=EQSlider.createFilterArray();      
+        let accessKey= document.getElementById("configShortcut").value
+        saveConfig(({"configName":configName,"accessKey":accessKey,"filterArray":filterArray}));
+        configNameObject.value='';
+        updateConfigList();
+    }));   
 }
 
 function deleteConfigClick() {
@@ -506,48 +494,46 @@ function deleteConfigClick() {
     if (configName.length==0) return;
 
     if (!confirm("Do you want to delete the configuration '"+configName+"'?")) return;
-    deleteConfigFromLocalStorage(configName);
-
-    
+    fetch('/deleteConfig?configName='+configName).then((res)=>updateConfigList());
     configNameObject.value='';
     updateConfigList();    
 }
 
 let hoverConfig;
 
-async function updateConfigList() {    
-    const configList = document.getElementById('configList');
-    configList.replaceChildren();
+async function updateConfigList() {      
+    fetch('/getConfigList').then((res)=>res.json().then(data=>{
+        const configList = document.getElementById('configList');
+        configList.replaceChildren();
 
-    let savedConfigs = window.localStorage.getItem('savedConfigs');
-    if (savedConfigs===null) savedConfigs={}; else savedConfigs=JSON.parse(savedConfigs)    
-
-    i=1;
-    for (let config of Object.keys(savedConfigs)) {                    
-        const div = document.createElement('div');            
-        div.classList.add('config');                        
-        div.innerText=config;        
-        div.accessKey=savedConfigs[config].accessKey;         
-        i++;
-        
-        // Load config from server when configName is clicked
-        div.addEventListener('click',function () {                               
-            document.getElementById('configName').value=this.innerText;
-            document.getElementById('configShortcut').value=this.accessKey;
-            let savedConfigs = window.localStorage.getItem('savedConfigs');
-            if (savedConfigs===null) savedConfigs={}; else savedConfigs=JSON.parse(savedConfigs)
-            let config = savedConfigs[this.innerText]    
-            let filterArrayJSON = convertFilterArayToJSON(config.filterArray);            
-            applyFilters(filterArrayJSON.filters);
-            canvasClick();
-            if (autoUpload) {
-                let filterArray= EQSlider.createFilterArray();                    
-                uploadConfigToDSP(filterArray).then(displayMessage("Upload successful",{"type":"success"}));
-            }
-        });
-        configList.appendChild(div);
-    }
-      
+        let savedConfigList = data;
+        i=1;
+        for (let config of savedConfigList) {            
+            const div = document.createElement('div');            
+            div.classList.add('config');                        
+            div.innerText=config;
+            getConfigFromServer(config).then((config)=>{
+               if (config.accessKey!=undefined) div.accessKey=config.accessKey; 
+            })
+            i++;
+            
+            // Load config from server when configName is clicked
+            div.addEventListener('click',function () {                               
+                document.getElementById('configName').value=this.innerText;
+                document.getElementById('configShortcut').value=this.accessKey;
+                getConfigFromServer(this.innerText).then((config)=>{                    
+                    let filterArrayJSON = convertFilterArayToJSON(config.filterArray);            
+                    applyFilters(filterArrayJSON.filters);
+                    canvasClick();
+                    if (autoUpload) {
+                        let filterArray= EQSlider.createFilterArray();                    
+                        uploadConfigToDSP(filterArray).then(displayMessage("Upload successful",{"type":"success"}));
+                    }
+                });                
+            });            
+            configList.appendChild(div);
+        }
+    }))    
 
 }
 
@@ -777,36 +763,6 @@ function sliderReset() {
 function sliderRemove() {
     contextSlider.parentElement.removeChild(contextSlider);
     contextSlider=null;
-}
-
-function saveConfigToLocalStorage(configObject) {
-    let savedConfigs = window.localStorage.getItem('savedConfigs');
-    if (savedConfigs===null) savedConfigs={}; else savedConfigs=JSON.parse(savedConfigs)    
-
-    console.log(savedConfigs)
-
-    // Check if the file exists
-    let found = savedConfigs[configObject.configName];
-    if (found!=undefined && confirm('Configuration with a same name already exists. Would you like to overwrite?')!=true ) return;   
-
-    savedConfigs[configObject.configName]=configObject;
-    window.localStorage.setItem('savedConfigs',JSON.stringify(savedConfigs))
-    
-    updateConfigList();
-}
-
-function deleteConfigFromLocalStorage(configName) {
-    let savedConfigs = window.localStorage.getItem('savedConfigs');
-    if (savedConfigs===null) savedConfigs={}; else savedConfigs=JSON.parse(savedConfigs)   
-
-    let tmpSavedConfigs={};
-    for (let config of Object.keys(savedConfigs)) {          
-        if (configName!=config) tmpSavedConfigs[config]=savedConfigs[config];        
-    }
-    window.localStorage.setItem('savedConfigs',JSON.stringify(tmpSavedConfigs));
-    
-
-
 }
 
 
