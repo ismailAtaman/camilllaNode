@@ -318,12 +318,7 @@ async function downloadClick() {
         console.log(filters)
         displayMessage("Download successful");
 
-        fetch('/getConfigName').then((res)=>res.text().then(data=>{
-            let config =JSON.parse(JSON.parse(data));
-            //console.log(config)
-            document.getElementById("configName").value=config.configName;
-            document.getElementById("configShortcut").value=config.configShortcut;        
-        }))
+        let currentConfig = findConfigFromFilterS(DSPConfig.filters)
 
     }).catch((err)=>{
         console.log("Failed to download config.")
@@ -803,10 +798,7 @@ function deleteConfigFromLocalStorage(configName) {
     for (let config of Object.keys(savedConfigs)) {          
         if (configName!=config) tmpSavedConfigs[config]=savedConfigs[config];        
     }
-    window.localStorage.setItem('savedConfigs',JSON.stringify(tmpSavedConfigs));
-    
-
-
+    window.localStorage.setItem('savedConfigs',JSON.stringify(tmpSavedConfigs));   
 }
 
 
