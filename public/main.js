@@ -243,3 +243,13 @@ function arrayEquals(a, b) {
         a.length === b.length &&
         a.every((val, index) => val === b[index]);
 }
+
+
+/// Check if to objects are equal
+function objectsEqual(x, y) {
+    return (x && y && typeof x === 'object' && typeof y === 'object') ?
+      (Object.keys(x).length === Object.keys(y).length) &&
+        Object.keys(x).reduce(function(isEqual, key) {
+          return isEqual && objectsEqual(x[key], y[key]);
+        }, true) : (x === y);
+  }

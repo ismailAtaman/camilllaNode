@@ -187,7 +187,7 @@ async function EQPageOnload() {
 
                     },5000)
                 }
-                console.log("ClipCount:",ret)                
+                // console.log("ClipCount:",ret)                
             })},500)     
     
         // document.getElementById('clipped').style.display='none';
@@ -315,10 +315,14 @@ async function downloadClick() {
         let filters = DSPConfig.filters;
         applyFilters(filters);        
         console.log("Config download successful.");        
-        console.log(filters)
+        // console.log(filters)
         displayMessage("Download successful");
 
-        let currentConfig = findConfigFromFilterS(DSPConfig.filters)
+        let currentConfig = findConfigNameFromFilters(DSPConfig.filters);
+        if (currentConfig!=undefined) {
+            document.getElementById('configName').value = currentConfig.configName;
+            document.getElementById('configShortcut').value = currentConfig.accessKey;
+        }
 
     }).catch((err)=>{
         console.log("Failed to download config.")
@@ -800,6 +804,40 @@ function deleteConfigFromLocalStorage(configName) {
     }
     window.localStorage.setItem('savedConfigs',JSON.stringify(tmpSavedConfigs));   
 }
+
+function findConfigNameFromFilters(filters) {    
+    let filterArray =[];
+    for (let filter of Object.keys(filters).sort((a,b)=>a>b)) {
+        let f = {};
+        f[filter]=filters[filter].parameters;
+        filterArray.push(f)
+    }
+    
+    let savedConfigs = window.localStorage.getItem('savedConfigs');
+    if (savedConfigs===null) savedConfigs={}; else savedConfigs=JSON.parse(savedConfigs)   
+    for (let config of Object.keys(savedConfigs)) {                
+        let currentFilters = savedConfigs[config].filterArray;
+        //console.log(currentFilters,filterArray,filterArraysEqual(currentFilters,filterArray))        
+        if (filterArraysEqual(currentFilters,filterArray)) {
+            return {configName:savedConfigs[config].configName,accessKey:savedConfigs[config].accessKey};
+        }
+    }
+    console.log('No matching config was found.')
+    return undefined;
+
+}
+
+
+function filterArraysEqual(fa1,fa2) {
+    if (fa1.length!=fa2.length) return false;
+    for (i=0;i<fa1.length;i++) {
+        if (Object.keys(fa1[i])[0].indexOf('ilter')>-1) if (!objectsEqual(fa1[i],fa2[i])) return false;
+        //console.log(fa1[i],fa2[i],objectsEqual(fa1[i],fa2[i]))
+    }
+    return true;
+}
+
+
 
 
 // EQ Slider class 
