@@ -791,6 +791,9 @@ function saveConfigToLocalStorage(configObject) {
     if (found!=undefined && confirm('Configuration with a same name already exists. Would you like to overwrite?')!=true ) return;   
 
     savedConfigs[configObject.configName]=configObject;
+
+    // Sort by name
+    savedConfigs = sortObjectListByName(savedConfigs);
     window.localStorage.setItem('savedConfigs',JSON.stringify(savedConfigs))
     
     updateConfigList();
@@ -828,7 +831,6 @@ function findConfigNameFromFilters(filters) {
     return undefined;
 
 }
-
 
 function filterArraysEqual(fa1,fa2) {
     if (fa1.length!=fa2.length) return false;
@@ -1035,8 +1037,7 @@ class EQSlider {
         
         sliderKnob.style.top=yPos+'px';
         
-        let hueAngle = parseInt((sliderMax/2-yPos) * (sliderMax/360));    
-        if (hueRotate) sliderKnob.parentElement.style.filter='hue-rotate('+hueAngle+'deg)';
+        let hueAngle = parseInt((sliderMax/2-yPos) * (sliderMax/360));            if (hueRotate) sliderKnob.parentElement.style.filter='hue-rotate('+hueAngle+'deg)';
     
         // console.log('Val : '+val)            
 

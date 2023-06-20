@@ -253,3 +253,19 @@ function objectsEqual(x, y) {
           return isEqual && objectsEqual(x[key], y[key]);
         }, true) : (x === y);
   }
+
+// Sort list of objects by object name
+function sortObjectListByName(objectList) {
+    let objectArray = [];
+    let returnObject = {};
+
+    for (let objectName of Object.keys(objectList)) {        
+        objectArray.push(objectList[objectName])
+    }
+
+    for (let objectName in objectArray.sort((a,b)=>a.configName>b.configName)) {            
+        returnObject[objectArray[objectName].configName]=objectArray[objectName]
+    }
+    return returnObject;
+
+}
