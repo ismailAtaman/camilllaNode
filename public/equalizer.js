@@ -332,7 +332,7 @@ async function downloadClick() {
 
 function exportClick() {
     let configText = EQSlider.convertConfigToText();
-    downloadFile('camillaNode EQ settings',configText);
+    downloadFile('camillaNode EQ settings - ' + document.getElementById('configName').value ,configText);
 }
 
 function applyFilters(filters) {
@@ -602,6 +602,8 @@ function downloadFile(filename, text) {
     let element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
+    element.setAttribute('filename',filename);
+    console.log(filename)
   
     element.style.display = 'none';
     document.body.appendChild(element);
