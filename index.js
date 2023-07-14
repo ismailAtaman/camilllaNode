@@ -45,6 +45,11 @@ app.get('/pipeline',(req,res)=>{
     res.render('pipeline');     
 }) 
 
+app.get('/abtest',(req,res)=>{
+    res.render('abtest');     
+}) 
+
+
 app.get('/settings',(req,res)=>{
     res.render('settings');     
 }) 
